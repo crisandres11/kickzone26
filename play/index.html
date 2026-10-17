@@ -175,6 +175,33 @@ p a{color:var(--amber)}
 .tools{flex-wrap:wrap;justify-content:flex-end}
 .idchip{display:inline-flex;align-items:center;min-height:40px;padding:8px 12px;border:1px solid var(--line);background:var(--panel);color:var(--amber);font:700 14px var(--display);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;font-variant-numeric:tabular-nums}
 .idchip:hover,.idchip:focus-visible{border-color:var(--amber)}
+/* ----- equipos y mejoras de interfaz ----- */
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:10px}
+.tcard{position:relative;display:block;cursor:pointer;min-width:0}
+.tcard input{position:absolute;opacity:0;inset:0;margin:0}
+.tc{display:grid;gap:6px;align-content:start;height:100%;padding:14px;background:var(--ink);border:2px solid var(--line);min-width:0}
+.tcard:hover .tc{border-color:var(--mute)}
+.tcard input:checked+.tc{border-color:var(--amber);background:rgba(255,182,39,.08)}
+.tcard input:focus-visible+.tc{outline:2px solid var(--amber);outline-offset:2px}
+.tc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.shirt{display:block;width:40px;height:40px;border-radius:50%;background:var(--c1);box-shadow:0 0 0 4px var(--c2);margin:4px}
+.tc-r{display:grid;justify-items:end;gap:2px}
+.tc-r b{font:900 32px/1 var(--display);font-variant-numeric:tabular-nums}
+.tc-r small{font:600 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.tc strong{font:800 22px/1.1 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.tc-k{color:var(--mute);font-size:13px}
+.tcard input:checked+.tc .tc-k::after{content:" · Tu equipo";color:var(--amber);font-weight:600}
+.tc-p{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menurow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 32px}
+#hud{box-shadow:inset 5px 0 0 var(--ca,#3a86ff),inset -5px 0 0 var(--cb,#e63946)}
+.tbar{grid-column:1/-1;height:4px;background:var(--panel-2)}
+.tbar i{display:block;height:100%;width:0;background:var(--amber)}
+#keyHint kbd{font-size:12px}
+.pause .hint{margin:0}
+.fx .fxn{display:flex;align-items:center;gap:10px;min-width:0}
+.goals{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.goals li{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--ink);border:1px solid var(--line)}
+.goals .gm{font:800 18px var(--display);color:var(--amber);min-width:38px;font-variant-numeric:tabular-nums}
 </style>
 
 <div class="app">
@@ -194,12 +221,14 @@ p a{color:var(--amber)}
       <div class="clk" id="hClk">0'</div>
     </div>
     <div class="tm r"><span id="hNameB"></span><i class="dot" id="hDotB"></i></div>
+    <div class="tbar" aria-hidden="true"><i id="hBar"></i></div>
   </div>
 
   <div class="stage" id="stage" hidden>
     <canvas id="cv" role="img" aria-label="Cancha de fútbol vista desde arriba"></canvas>
     <div class="pause" id="pauseBox" hidden>
       <h2>Pausa</h2>
+      <p class="hint">En PC, pulsa Esc para seguir</p>
       <button class="btn primary" type="button" id="bResume">Reanudar</button>
       <button class="btn" type="button" id="bQuit">Salir al inicio</button>
     </div>
@@ -213,6 +242,7 @@ p a{color:var(--amber)}
       <button type="button" id="tShoot">TIRO</button>
     </div>
   </div>
+  <p class="hint" id="keyHint" hidden><kbd>←↑↓→</kbd> o <kbd>WASD</kbd> mover · <kbd>Espacio</kbd> pase · <kbd>P</kbd> tiro (mantén = potente) · <kbd>L</kbd> correr · <kbd>Esc</kbd> pausa</p>
   <p class="hint" id="padHint" hidden>Toca TIRO para tirar y mantenlo para un tiro potente. Mantén CORRER para correr.</p>
 
   <div id="screen"></div>
@@ -231,13 +261,37 @@ const LEVELS = [
   { name: 'Normal',  speed: 134, gk: 150, shoot: .45, pass: .50, spread: .16 },
   { name: 'Difícil', speed: 152, gk: 180, shoot: .62, pass: .60, spread: .07 }
 ];
-const OPP = [
-  { name: 'Cordillera FC',  c1: '#7b2cbf', c2: '#e0c3fc', str: 1.10 },
-  { name: 'Pacífico SC',    c1: '#00b4d8', c2: '#caf0f8', str: 0.95 },
-  { name: 'Atacama United', c1: '#f77f00', c2: '#ffe8cc', str: 1.00 },
-  { name: 'Araucanía Rayo', c1: '#3d405b', c2: '#e07a5f', str: 0.90 },
-  { name: 'Patagonia Real', c1: '#d00000', c2: '#ffffff', str: 1.20 }
+/* Equipos definidos a partir de la lista de jugadores (Jugadores - Hoja 1).
+   Nombres, dorsales, valoraciones y selección/equipo salen de la lista; los colores de camiseta son de diseño. */
+const TEAMS = [
+  { id: 'elpuente', name: 'El Puente', kind: 'Selección', c1: '#3a86ff', c2: '#ffffff', roster: [
+    { n: 'Lucas C.', d: 32, r: 76 }, { n: 'Felipe N.', d: 1, r: 82, gk: true }, { n: 'Cristóbal R.', d: 14, r: 92 },
+    { n: 'Matías H.', d: 20, r: 78 }, { n: 'Tomás D.', d: 22, r: 80 }, { n: 'Álvaro Guzmán', d: 50, r: 84 },
+    { n: 'Diego C.', d: 34, r: 90 }, { n: 'Ignacio S.', d: 37, r: 91 }, { n: 'Benjamín F.', d: 40, r: 92 } ] },
+  { id: 'crispantolo', name: 'CrisPantolo', kind: 'Selección', c1: '#9b5de5', c2: '#f3e8ff', roster: [
+    { n: 'CrisFut', d: 10, r: 93 }, { n: 'Tomás V.', d: 12, r: 86 } ] },
+  { id: 'harling', name: 'Harling UF', kind: 'Club', c1: '#f4d35e', c2: '#0d3b66', roster: [
+    { n: 'Lucas C.', d: 32, r: 76 }, { n: 'Felipe N.', d: 1, r: 82, gk: true }, { n: 'Matías H.', d: 20, r: 78 },
+    { n: 'Tomás D.', d: 22, r: 80 }, { n: 'Álvaro Guzmán', d: 50, r: 84 }, { n: 'Diego C.', d: 34, r: 90 },
+    { n: 'Ignacio S.', d: 37, r: 91 }, { n: 'Benjamín F.', d: 40, r: 92 } ] },
+  { id: 'barcos', name: 'Barcos y Piratas', kind: 'Club', c1: '#c1121f', c2: '#f1faee', roster: [
+    { n: 'Tomás V.', d: 12, r: 86 }, { n: 'Cristóbal R.', d: 14, r: 92 } ] },
+  { id: 'pantolo', name: 'Pantolo Club', kind: 'Club', c1: '#ff7b00', c2: '#ffffff', roster: [
+    { n: 'CrisFut', d: 10, r: 93 } ] }
 ];
+/* Valoración del equipo = promedio de sus 4 mejores jugadores. Los 4 titulares salen de la lista;
+   los puestos sin jugador en la lista se rellenan con un nombre genérico. */
+function teamInfo(t) {
+  const sorted = t.roster.slice().sort((a, b) => b.r - a.r);
+  const top = sorted.slice(0, 4);
+  const rating = top.reduce((a, p) => a + p.r, 0) / top.length;
+  const gk = t.roster.find(p => p.gk) || null;
+  const field = sorted.filter(p => !p.gk).slice(0, 3);
+  const slots = [gk, field[2] || null, field[0] || null, field[1] || null];
+  const generic = ['Portero', 'Defensa', 'Volante', 'Volante'], dn = [1, 4, 10, 7];
+  const lineup = slots.map((p, i) => p ? { name: p.n, num: p.d } : { name: generic[i], num: dn[i] });
+  return { rating, str: 1 + (rating - 90) / 40, lineup, best: sorted.slice(0, 3).map(p => p.n) };
+}
 const KITS = [
   ['Rojo', '#e63946'], ['Azul', '#3a86ff'], ['Amarillo', '#ffd23f'], ['Blanco', '#f4f1ea']
 ];
@@ -493,7 +547,12 @@ function getDevice() {
 }
 function deviceAsked() { try { return !!sessionStorage.getItem('kz26.dev'); } catch (e) { return false; } }
 function setDevice(v) { try { sessionStorage.setItem('kz26.dev', v); localStorage.setItem('kz26.dev', v); } catch (e) { /* ok */ } }
-const G = { mode: 'menu', match: null, league: null, cfg: loadCfg(), quickOpp: 0 };
+function loadTeamId() {
+  try { const v = localStorage.getItem('kz26.team'); if (TEAMS.some(t => t.id === v)) return v; } catch (e) { /* ok */ }
+  return TEAMS[0].id;
+}
+const G = { mode: 'menu', match: null, league: null, cfg: loadCfg(), teamId: loadTeamId(), quickRival: null };
+function saveTeam() { try { localStorage.setItem('kz26.team', G.teamId); } catch (e) { /* ok */ } }
 function goHome() { location.href = '../home/game/'; }
 
 /* ---------- partido ---------- */
@@ -519,18 +578,18 @@ function resetPos(m, kickTeam) {
   m.ball = { x: W / 2, y: H / 2, vx: 0, vy: 0, rot: 0 };
   m.last = null; m.passTarget = null; m.charge = 0; m.owner = null;
 }
-function newMatch(userTeam, oppTeam, oppStr, level) {
+function newMatch(userTeam, oppTeam, level) {
+  const ui = teamInfo(userTeam), oi = teamInfo(oppTeam);
   const kitB = kitFor(oppTeam, userTeam.c1);
   const m = {
-    teams: [{ name: userTeam.name, c1: userTeam.c1, c2: '#ffffff' }, { name: oppTeam.name, c1: kitB.c1, c2: kitB.c2 }],
+    teams: [{ name: userTeam.name, c1: userTeam.c1, c2: userTeam.c2 }, { name: oppTeam.name, c1: kitB.c1, c2: kitB.c2 }],
     lvl: Object.assign({}, LEVELS[level]), score: [0, 0], time: 0, dur: MATCH_SECS,
     phase: 'kickoff', phaseT: 2.4, kickLabel: 'Saque inicial', players: mkPlayers(),
     ball: null, last: null, passTarget: null, charge: 0, ctrl: null, ctrlT: 0,
-    chaser: [null, null], paused: false, goalBy: -1, hud: {}, owner: null, stam: 100, tired: false
+    chaser: [null, null], paused: false, goalBy: -1, hud: {}, owner: null, stam: 100, tired: false, goals: []
   };
-  const oppNames = ['Silva', 'Torres', 'Pérez', 'Díaz'], mine = (G.cfg.names || []);
-  m.players.forEach(p => { p.name = p.team === 0 ? (mine[p.idx] || 'Jugador') : oppNames[p.idx]; });
-  const f = 1 + (oppStr - 1) * .12;
+  m.players.forEach(p => { const l = (p.team === 0 ? ui : oi).lineup[p.idx]; p.name = l.name; p.num = l.num; });
+  const f = 1 + (oi.str - 1) * .6;
   m.lvl.speed *= f; m.lvl.gk *= f;
   resetPos(m, 0);
   m.ctrl = m.players.find(p => p.team === 0 && p.idx === 1);
@@ -734,6 +793,7 @@ function scoreGoal(m, team) {
   m.score[team]++; m.goalBy = team; m.phase = 'goal'; m.phaseT = 2.4; m.owner = null;
   const sc = m.last;
   m.scorer = !sc ? '' : sc.team === team ? sc.num + ' ' + sc.name : sc.name + ' (en contra)';
+  m.goals.push({ team, min: clamp(Math.ceil(m.time / m.dur * 90), 1, 90), who: m.scorer || 'Gol' });
   inp.shootHeld = false; inp.shootRel = false; inp.passQ = false; m.charge = 0;
   sfx.goal();
 }
@@ -935,16 +995,19 @@ function draw(m, t) {
 
 /* ---------- HUD ---------- */
 function setText(el, v) { if (el.textContent !== v) el.textContent = v; }
+const hBar = $('#hBar');
 function updateHud(m) {
   setText($('#hA'), String(m.score[0])); setText($('#hB'), String(m.score[1]));
   const min = Math.min(90, Math.floor(m.time / m.dur * 90));
   setText($('#hClk'), m.phase === 'end' || m.time >= m.dur ? 'FIN' : min + "'");
+  hBar.style.width = (clamp(m.time / m.dur, 0, 1) * 100).toFixed(1) + '%';
 }
 function setHudTeams(m) {
   $('#hNameA').textContent = m.teams[0].name; $('#hNameB').textContent = m.teams[1].name;
   const a = $('#hDotA'), b = $('#hDotB');
   a.style.background = m.teams[0].c1; a.style.boxShadow = '0 0 0 2px ' + m.teams[0].c2;
   b.style.background = m.teams[1].c1; b.style.boxShadow = '0 0 0 2px ' + m.teams[1].c2;
+  hudEl.style.setProperty('--ca', m.teams[0].c1); hudEl.style.setProperty('--cb', m.teams[1].c1);
 }
 
 /* ---------- bucle ---------- */
@@ -982,16 +1045,19 @@ $('#bResume').addEventListener('click', togglePause);
 $('#bQuit').addEventListener('click', () => { G.match = null; held.clear(); goHome(); });
 
 /* ---------- liga ---------- */
-function buildLeague(cfg) {
-  const teams = [{ name: cfg.name, c1: cfg.color, c2: '#ffffff', str: 1, user: true }].concat(OPP.map(o => Object.assign({}, o)));
-  const arr = [0, 1, 2, 3, 4, 5], rounds = [];
+function buildLeague(teamId) {
+  const me = TEAMS.find(t => t.id === teamId) || TEAMS[0];
+  const teams = [me].concat(TEAMS.filter(t => t !== me));
+  const arr = [0, 1, 2, 3, 4, 5], rounds = [];   /* el 5 es el descanso */
   for (let r = 0; r < 5; r++) {
     const pairs = [];
     for (let i = 0; i < 3; i++) pairs.push([arr[i], arr[5 - i]]);
     rounds.push(pairs);
     arr.splice(1, 0, arr.pop());
   }
-  return { teams, rounds, round: 0, rows: teams.map(() => ({ p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 })), hist: [] };
+  for (let i = rounds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rounds[i], rounds[j]] = [rounds[j], rounds[i]]; }
+  return { teams, strs: teams.map(t => teamInfo(t).str), rounds, round: 0, counted: false, hist: [],
+    rows: teams.map(() => ({ p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 })) };
 }
 function record(L, a, b, ga, gb) {
   const A = L.rows[a], B = L.rows[b];
@@ -1001,12 +1067,20 @@ function record(L, a, b, ga, gb) {
 function pois(l) { const L = Math.exp(-l); let k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L && k < 12); return k - 1; }
 function simRound(L, r) {
   for (const [a, b] of L.rounds[r]) {
-    if (a === 0 || b === 0) continue;
-    const sa = L.teams[a].str, sb = L.teams[b].str;
+    if (a === 5 || b === 5 || a === 0 || b === 0) continue;
+    const sa = L.strs[a], sb = L.strs[b];
     record(L, a, b, pois(1.35 * Math.pow(sa / sb, .5)), pois(1.35 * Math.pow(sb / sa, .5)));
   }
 }
-function oppOf(L, r) { const pr = L.rounds[r].find(p => p[0] === 0 || p[1] === 0); return pr[0] === 0 ? pr[1] : pr[0]; }
+function oppOf(L, r) {
+  const pr = L.rounds[r].find(p => p[0] === 0 || p[1] === 0), o = pr[0] === 0 ? pr[1] : pr[0];
+  return o === 5 ? -1 : o;
+}
+function leagueDone(L) {
+  if (L.round < 5 || L.counted) return;
+  L.counted = true;
+  PROFILE = recordLeague(standings(L).findIndex(x => x.i === 0) + 1); updId();
+}
 function standings(L) {
   return L.rows.map((x, i) => ({ i, p: x.p, w: x.w, d: x.d, l: x.l, gf: x.gf, ga: x.ga, gd: x.gf - x.ga, pts: x.w * 3 + x.d }))
     .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.i - b.i);
@@ -1015,6 +1089,7 @@ function standings(L) {
 /* ---------- pantallas ---------- */
 function scr(html, ctxText) {
   stageEl.hidden = true; hudEl.hidden = true; padEl.hidden = true; padHint.hidden = true; bPause.hidden = true; pauseBox.hidden = true;
+  document.getElementById('keyHint').hidden = true;
   ctxEl.textContent = ctxText || 'Fútbol arcade';
   document.querySelector('.app').classList.remove('is-home');
   setVol(.55);
@@ -1032,20 +1107,25 @@ function controlsHtml() {
 }
 function showMenu() {
   G.mode = 'menu'; const c = G.cfg;
+  const cards = TEAMS.map(t => {
+    const inf = teamInfo(t), n = t.roster.length;
+    return `<label class="tcard"><input type="radio" name="team" value="${t.id}" ${t.id === G.teamId ? 'checked' : ''}>
+      <span class="tc"><span class="tc-top"><i class="shirt" style="--c1:${t.c1};--c2:${t.c2}"></i><span class="tc-r"><b>${Math.round(inf.rating)}</b><small>Valoración</small></span></span>
+      <strong>${esc(t.name)}</strong>
+      <small class="tc-k">${t.kind} · ${n} jugador${n === 1 ? '' : 'es'}</small>
+      <span class="tc-p">${esc(inf.best.join(', '))}</span></span></label>`;
+  }).join('');
   scr(`
   <section class="card">
-    <p class="kicker">Liga de 6 equipos · 5 jornadas · 2 minutos por partido</p>
-    <h1>Arma tu equipo</h1>
-    <div style="display:grid;gap:8px">
-      <label class="lbl" for="tname">Nombre del equipo</label>
-      <input type="text" id="tname" maxlength="18" value="${esc(c.name)}" autocomplete="off">
+    <p class="kicker">Liga de 5 equipos · 4 partidos de 2 minutos · una jornada de descanso</p>
+    <h1>Elige tu equipo</h1>
+    <div class="teams" role="radiogroup" aria-label="Equipos">${cards}</div>
+    <div class="menurow">
+      <fieldset><legend>Dificultad del rival</legend>
+        <div class="row">${LEVELS.map((l, i) => `<label class="seg"><input type="radio" name="lvl" value="${i}" ${i === c.level ? 'checked' : ''}><span>${l.name}</span></label>`).join('')}</div>
+      </fieldset>
+      <div style="display:grid;gap:10px"><label class="lbl" for="qOpp">Rival del partido rápido</label><select id="qOpp"></select></div>
     </div>
-    <fieldset><legend>Camiseta</legend>
-      <div class="row">${KITS.map(k => `<label class="sw" title="${k[0]}"><input type="radio" name="kit" value="${k[1]}" ${k[1] === c.color ? 'checked' : ''} aria-label="${k[0]}"><span style="background:${k[1]}"></span></label>`).join('')}</div>
-    </fieldset>
-    <fieldset><legend>Dificultad del rival</legend>
-      <div class="row">${LEVELS.map((l, i) => `<label class="seg"><input type="radio" name="lvl" value="${i}" ${i === c.level ? 'checked' : ''}><span>${l.name}</span></label>`).join('')}</div>
-    </fieldset>
     <div class="row">
       <button class="btn primary" type="button" data-act="league">Comenzar liga</button>
       <button class="btn" type="button" data-act="quick">Partido rápido</button>
@@ -1054,30 +1134,58 @@ function showMenu() {
     </div>
     ${controlsHtml()}
   </section>`, 'Fútbol arcade');
+  fillRivals();
 }
-function readCfg() {
-  const n = $('#tname').value.trim().slice(0, 18) || 'KZ United';
-  const col = (document.querySelector('input[name=kit]:checked') || {}).value || KITS[0][1];
-  const lv = Number((document.querySelector('input[name=lvl]:checked') || {}).value);
-  G.cfg = { name: n, color: col, level: isNaN(lv) ? 1 : lv, names: G.cfg.names };
-  saveCfg();
+function fillRivals() {
+  const sel = document.getElementById('qOpp'); if (!sel) return;
+  const cur = sel.value, others = TEAMS.filter(t => t.id !== G.teamId);
+  sel.innerHTML = '<option value="rnd">Aleatorio</option>' + others.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  if (others.some(t => t.id === cur)) sel.value = cur;
+}
+function readSetup() {
+  const t = (document.querySelector('input[name=team]:checked') || {}).value;
+  if (TEAMS.some(x => x.id === t)) G.teamId = t;
+  const lvEl = document.querySelector('input[name=lvl]:checked');
+  const lv = lvEl ? Number(lvEl.value) : G.cfg.level;
+  G.cfg = Object.assign({}, G.cfg, { level: [0, 1, 2].includes(lv) ? lv : 1 });
+  saveCfg(); saveTeam();
 }
 
-function strLabel(s) { return s >= 1.15 ? 'Muy fuerte' : s >= 1.0 ? 'Parejo' : 'Más débil'; }
-function showIntro() {
-  const L = G.league, r = L.round, oi = oppOf(L, r), o = L.teams[oi], u = L.teams[0];
-  const ok = kitFor(o, u.c1);
-  const fx = L.rounds.map((_, i) => {
-    const q = L.teams[oppOf(L, i)], h = L.hist[i];
-    const res = h ? `<b class="${h.gf > h.ga ? 'res-w' : h.gf < h.ga ? 'res-l' : 'res-d'}">${h.gf} - ${h.ga}</b>` : `<b class="res-d">${i === r ? 'Hoy' : '·'}</b>`;
-    return `<li class="${i === r ? 'now' : ''}"><span>Jornada ${i + 1} · ${esc(q.name)}</span>${res}</li>`;
+function fixtureHtml(L, r) {
+  return L.rounds.map((_, i) => {
+    const oi = oppOf(L, i), h = L.hist[i];
+    let res;
+    if (h && h.bye) res = '<b class="res-d">Descanso</b>';
+    else if (h) res = `<b class="${h.gf > h.ga ? 'res-w' : h.gf < h.ga ? 'res-l' : 'res-d'}">${h.gf} - ${h.ga}</b>`;
+    else res = `<b class="res-d">${i === r ? 'Hoy' : '·'}</b>`;
+    const who = oi < 0 ? 'Descansas' : badge(L.teams[oi]) + esc(L.teams[oi].name);
+    return `<li class="${i === r ? 'now' : ''}"><span class="fxn">Jornada ${i + 1} · ${who}</span>${res}</li>`;
   }).join('');
+}
+function showIntro() {
+  const L = G.league, r = L.round, oi = oppOf(L, r), u = L.teams[0];
+  if (oi < 0) {
+    scr(`
+    <section class="card">
+      <p class="kicker">Jornada ${r + 1} de 5</p>
+      <h1>Descansas esta jornada</h1>
+      <p>Tu equipo no juega. Los otros cuatro equipos se enfrentan entre ellos.</p>
+      <ul class="fx">${fixtureHtml(L, r)}</ul>
+      <div class="row">
+        <button class="btn primary" type="button" data-act="bye">Simular jornada</button>
+        <button class="btn" type="button" data-act="table">Ver tabla</button>
+        <button class="btn" type="button" data-act="home">Inicio</button>
+      </div>
+    </section>`, 'Liga · Descanso');
+    return;
+  }
+  const o = L.teams[oi], ok = kitFor(o, u.c1), ru = Math.round(teamInfo(u).rating), ro = Math.round(teamInfo(o).rating);
   scr(`
   <section class="card">
     <p class="kicker">Jornada ${r + 1} de 5</p>
     <div class="vs">${badge(u)}<span>${esc(u.name)}</span><em>vs</em>${badge({ c1: ok.c1, c2: ok.c2 })}<span>${esc(o.name)}</span></div>
-    <p>Rival: ${strLabel(o.str)}. Dificultad ${LEVELS[G.cfg.level].name.toLowerCase()}.</p>
-    <ul class="fx">${fx}</ul>
+    <p>Valoración ${ru} contra ${ro}. Dificultad ${LEVELS[G.cfg.level].name.toLowerCase()}.</p>
+    <ul class="fx">${fixtureHtml(L, r)}</ul>
     <div class="row">
       <button class="btn primary" type="button" data-act="play">Jugar</button>
       <button class="btn" type="button" data-act="table">Ver tabla</button>
@@ -1098,7 +1206,7 @@ function showTable(afterMatch) {
   if (done) {
     const pos = standings(L).findIndex(s => s.i === 0) + 1;
     banner = `<div class="banner">${pos === 1 ? '¡Campeón de la liga!' : pos === 2 ? 'Subcampeón' : 'Terminaste en el puesto ' + pos}</div>`;
-    btns = `<button class="btn primary" type="button" data-act="league">Nueva liga</button><button class="btn" type="button" data-act="home">Inicio</button>`;
+    btns = `<button class="btn primary" type="button" data-act="league">Nueva liga</button><button class="btn" type="button" data-act="menu">Cambiar de equipo</button><button class="btn" type="button" data-act="home">Inicio</button>`;
   } else {
     btns = `<button class="btn primary" type="button" data-act="intro">${afterMatch ? 'Siguiente jornada' : 'Volver'}</button><button class="btn" type="button" data-act="home">Inicio</button>`;
   }
@@ -1108,13 +1216,17 @@ function showFull(m, quick) {
   const gf = m.score[0], ga = m.score[1];
   const msg = gf > ga ? 'Victoria' : gf < ga ? 'Derrota' : 'Empate';
   const btns = quick
-    ? `<button class="btn primary" type="button" data-act="quick">Revancha</button><button class="btn" type="button" data-act="home">Inicio</button>`
+    ? `<button class="btn primary" type="button" data-act="quick">Revancha</button><button class="btn" type="button" data-act="menu">Cambiar de equipo</button><button class="btn" type="button" data-act="home">Inicio</button>`
     : `<button class="btn primary" type="button" data-act="table2">Ver tabla</button>`;
+  const goals = m.goals.length
+    ? `<ul class="goals">${m.goals.map(g => `<li><span class="gm">${g.min}'</span>${badge(m.teams[g.team])}<span>${esc(g.who)}</span></li>`).join('')}</ul>`
+    : '<p>No hubo goles.</p>';
   scr(`<section class="card">
     <p class="kicker">Final del partido</p>
     <div class="vs">${badge(m.teams[0])}<span>${esc(m.teams[0].name)}</span><em>vs</em>${badge(m.teams[1])}<span>${esc(m.teams[1].name)}</span></div>
     <div class="big">${gf} - ${ga}</div>
     <h2 class="${gf > ga ? 'res-w' : gf < ga ? 'res-l' : 'res-d'}">${msg}</h2>
+    <div style="display:grid;gap:10px"><h3 class="lbl">Goles</h3>${goals}</div>
     <div class="row">${btns}</div>
   </section>`, quick ? 'Partido rápido' : 'Liga · Final');
 }
@@ -1126,25 +1238,40 @@ screenEl.addEventListener('click', e => {
   tone(660, .06, 'square', .03);
   if (a === 'menu' || a === 'jugar') showMenu();
   else if (a === 'home') goHome();
-  else if (a === 'league') { readCfg(); G.league = buildLeague(G.cfg); G.mode = 'league'; showIntro(); }
+  else if (a === 'league') { readSetup(); G.league = buildLeague(G.teamId); G.mode = 'league'; showIntro(); }
   else if (a === 'quick') {
-    if (G.mode === 'menu') readCfg();
-    G.mode = 'quick'; G.quickOpp = Math.floor(Math.random() * OPP.length);
-    startMatch(OPP[G.quickOpp], OPP[G.quickOpp].str);
+    if (G.mode === 'menu') {
+      readSetup();
+      const v = (document.getElementById('qOpp') || {}).value, others = TEAMS.filter(t => t.id !== G.teamId);
+      G.quickRival = (others.find(t => t.id === v) || others[Math.floor(Math.random() * others.length)]).id;
+    }
+    G.mode = 'quick';
+    startMatch(TEAMS.find(t => t.id === G.quickRival) || TEAMS.find(t => t.id !== G.teamId));
   }
   else if (a === 'intro') showIntro();
-  else if (a === 'play') { const oi = oppOf(G.league, G.league.round); startMatch(G.league.teams[oi], G.league.teams[oi].str); }
+  else if (a === 'play') startMatch(G.league.teams[oppOf(G.league, G.league.round)]);
+  else if (a === 'bye') {
+    const L = G.league;
+    simRound(L, L.round); L.hist.push({ bye: true }); L.round++; leagueDone(L);
+    if (L.round >= 5) showTable(true); else showIntro();
+  }
   else if (a === 'table') showTable(false);
   else if (a === 'table2') showTable(true);
 });
+screenEl.addEventListener('change', e => {
+  const t = e.target;
+  if (t && t.name === 'team') { G.teamId = t.value; saveTeam(); fillRivals(); }
+});
 
-function startMatch(opp, str) {
-  const m = newMatch({ name: G.cfg.name, c1: G.cfg.color }, opp, str, G.cfg.level);
+function startMatch(oppTeam) {
+  const me = TEAMS.find(t => t.id === G.teamId) || TEAMS[0];
+  const m = newMatch(me, oppTeam, G.cfg.level);
   G.match = m; held.clear(); joyEnd(); inp.shootHeld = inp.shootRel = inp.passQ = false;
   screenEl.hidden = true; screenEl.innerHTML = '';
   stageEl.hidden = false; hudEl.hidden = false; bPause.hidden = false; bPause.textContent = 'Pausa'; pauseBox.hidden = true;
   const touch = getDevice() === 'mobile';
   padEl.hidden = !touch; padHint.hidden = !touch;
+  document.getElementById('keyHint').hidden = touch;
   ctxEl.textContent = G.mode === 'league' ? 'Liga · Jornada ' + (G.league.round + 1) + '/5' : 'Partido rápido';
   setVol(.2); setHudTeams(m); fit(); acc = 0; lastTs = performance.now();
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -1158,7 +1285,7 @@ function finishMatch(m) {
     record(L, 0, oi, m.score[0], m.score[1]);
     L.hist.push({ gf: m.score[0], ga: m.score[1] });
     simRound(L, r); L.round++;
-    if (L.round >= 5) PROFILE = recordLeague(standings(L).findIndex(x => x.i === 0) + 1);
+    leagueDone(L);
     showFull(m, false);
   } else showFull(m, true);
 }
