@@ -20,6 +20,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
+[hidden]{display:none!important}
 body{
   background:var(--ink);color:var(--chalk);
   font:16px/1.45 var(--body);
@@ -121,6 +122,16 @@ details[open] summary{margin-bottom:10px}
 .hint{font-size:14px;color:var(--mute);text-align:center;margin:0}
 
 a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+p a{color:var(--amber)}
+.dev{display:grid;gap:20px;justify-items:center;text-align:center;padding:clamp(28px,7vw,64px) 16px;background:var(--panel);border:1px solid var(--line)}
+.dev h1{margin:0;font:900 clamp(34px,8vw,64px)/1 var(--display);text-transform:uppercase;text-wrap:balance}
+.dev p{margin:0}
+.dev .sub{color:var(--mute);max-width:46ch}
+.opts{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.opt{width:min(240px,42vw);min-width:150px;display:grid;justify-items:center;gap:10px;padding:22px 14px;background:var(--ink);border:2px solid var(--line);color:var(--chalk);cursor:pointer;font:800 clamp(20px,4.6vw,28px) var(--display);letter-spacing:.08em;text-transform:uppercase}
+.opt:hover,.opt:focus-visible{border-color:var(--amber)}
+.opt.on{border-color:var(--amber);background:rgba(255,182,39,.12)}
+.opt svg{width:64px;height:64px;stroke:var(--amber);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* ----- inicio ----- */
 .app.is-home .mark{visibility:hidden}
 .home{position:relative;overflow:hidden;border:1px solid var(--line);background:#08101c;min-height:clamp(460px,74vh,700px);display:grid;place-items:center;isolation:isolate}
@@ -364,7 +375,6 @@ addEventListener('keyup', e => {
 addEventListener('blur', () => {
   held.clear();
   if (inp.shootHeld) { inp.shootHeld = false; inp.shootRel = true; }
-  if (G.match && !G.match.paused) togglePause();
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.match && !G.match.paused) togglePause(); });
 
@@ -417,6 +427,16 @@ function loadCfg() {
   return d;
 }
 function saveCfg() { try { localStorage.setItem('kz26.cfg', JSON.stringify(G.cfg)); } catch (e) { /* ok */ } }
+
+function getDevice() {
+  try {
+    const v = sessionStorage.getItem('kz26.dev') || localStorage.getItem('kz26.dev');
+    if (v === 'mobile' || v === 'pc') return v;
+  } catch (e) { /* sin almacenamiento */ }
+  return (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'mobile' : 'pc';
+}
+function deviceAsked() { try { return !!sessionStorage.getItem('kz26.dev'); } catch (e) { return false; } }
+function setDevice(v) { try { sessionStorage.setItem('kz26.dev', v); localStorage.setItem('kz26.dev', v); } catch (e) { /* ok */ } }
 const G = { mode: 'menu', match: null, league: null, cfg: loadCfg(), quickOpp: 0 };
 function goHome() { location.href = '../home/'; }
 
@@ -916,6 +936,14 @@ function scr(html, ctxText) {
 }
 const badge = t => `<i class="dot" style="background:${t.c1};box-shadow:0 0 0 2px ${t.c2}"></i>`;
 
+function controlsHtml() {
+  const mob = getDevice() === 'mobile';
+  const keys = mob
+    ? '<div>Palanca: mover</div><div>PASE: toca el botón</div><div>TIRO: mantén el botón para cargar y suéltalo para patear</div><div>Pausa: botón Pausa de arriba</div>'
+    : '<div><kbd>←↑↓→</kbd> o <kbd>W A S D</kbd> mover</div><div><kbd>Espacio</kbd> o <kbd>Z</kbd> pase</div><div><kbd>Shift</kbd> o <kbd>X</kbd> tiro: mantén para cargar, suelta para patear</div><div><kbd>P</kbd> pausa</div>';
+  return `<details open><summary>Controles</summary><div class="keys">${keys}</div>
+      <p style="margin-top:10px">Controlas al jugador más cercano al balón. Dispositivo: ${mob ? 'celular' : 'PC'}. <a href="../home/#dispositivo">Cambiar</a></p></details>`;
+}
 function showMenu() {
   G.mode = 'menu'; const c = G.cfg;
   scr(`
@@ -938,16 +966,7 @@ function showMenu() {
       <a class="btn" href="../home/#plantilla">Plantilla</a>
       <button class="btn" type="button" data-act="home">Inicio</button>
     </div>
-    <details>
-      <summary>Controles</summary>
-      <div class="keys">
-        <div><kbd>←↑↓→</kbd> o <kbd>W A S D</kbd> mover</div>
-        <div><kbd>Espacio</kbd> o <kbd>Z</kbd> pase</div>
-        <div><kbd>Shift</kbd> o <kbd>X</kbd> tiro: mantén para cargar, suelta para patear</div>
-        <div><kbd>P</kbd> pausa</div>
-      </div>
-      <p style="margin-top:10px">Controlas al jugador más cercano al balón. En el celular usa la palanca y los botones bajo la cancha.</p>
-    </details>
+    ${controlsHtml()}
   </section>`, 'Fútbol arcade');
 }
 function readCfg() {
@@ -1038,7 +1057,7 @@ function startMatch(opp, str) {
   G.match = m; held.clear(); joyEnd(); inp.shootHeld = inp.shootRel = inp.passQ = false;
   screenEl.hidden = true; screenEl.innerHTML = '';
   stageEl.hidden = false; hudEl.hidden = false; bPause.hidden = false; bPause.textContent = 'Pausa'; pauseBox.hidden = true;
-  const touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  const touch = getDevice() === 'mobile';
   padEl.hidden = !touch; padHint.hidden = !touch;
   ctxEl.textContent = G.mode === 'league' ? 'Liga · Jornada ' + (G.league.round + 1) + '/5' : 'Partido rápido';
   setVol(.2); setHudTeams(m); fit(); acc = 0; lastTs = performance.now();
