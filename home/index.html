@@ -156,64 +156,34 @@ p a{color:var(--amber)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,182,39,.5)}50%{box-shadow:0 0 0 12px rgba(255,182,39,0)}}
 @media (prefers-reduced-motion:reduce){.home *{animation:none!important}}
 
-/* ----- plantilla ----- */
-.squad{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
-.squad svg{width:100%;height:auto;display:block;border:1px solid var(--line)}
-.pcs{display:grid;gap:10px;min-width:0}
-.pc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 14px;align-items:center;background:var(--ink);border:1px solid var(--line);padding:10px 12px}
-.pc .num{grid-row:span 3;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:900 22px var(--display);border:3px solid #fff}
-.pc .pos{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
-.pc input[type=text]{font-size:18px;min-height:40px;padding:6px 10px;max-width:none}
-.pc .ds{font-size:14px;color:var(--mute)}
-@media (max-width:720px){.squad{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:480px){
   .mark small{display:none}
   #hud{padding:8px 10px;gap:8px}
 }
-/* ----- menú ----- */
-.ht.sm{font-size:clamp(70px,17vw,130px)}
-.menu{display:grid;gap:10px;width:min(440px,100%);margin:8px auto 0;padding:0;list-style:none}
-.menu li{display:block;animation:rise .6s calc(var(--i) * .08s + .5s) both}
-.mbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;text-decoration:none;color:var(--chalk);background:rgba(21,32,51,.9);border:1px solid var(--line);padding:0 18px;min-height:56px;font:800 clamp(20px,5vw,26px) var(--display);letter-spacing:.08em;text-transform:uppercase;text-align:left}
-.mbtn:hover,.mbtn:focus-visible{border-color:var(--amber);background:rgba(28,42,66,.96)}
-.mbtn.primary{background:var(--amber);color:#1a1200;border-color:var(--amber)}
-.mbtn .arr{color:var(--amber)}
-.mbtn.primary .arr{color:#1a1200}
-.mbtn small{font:600 11px/1 var(--body);letter-spacing:.14em;color:var(--mute);border:1px solid var(--line);padding:4px 7px}
-h1:focus{outline:none}
-/* ----- tienda ----- */
-select{font:600 16px var(--body);background:var(--ink);color:var(--chalk);border:1px solid var(--line);padding:10px 12px;min-height:44px;max-width:100%}
-.shopbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 28px}
-.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.sp{display:grid;gap:10px;align-content:start;background:var(--ink);border:1px solid var(--line);padding:14px;min-width:0}
-.sp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.dor{font:900 52px/.9 var(--display);color:var(--amber);font-variant-numeric:tabular-nums}
-.val{display:grid;justify-items:end;gap:2px}
-.val b{font:900 30px/1 var(--display);font-variant-numeric:tabular-nums}
-.val small{font:600 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.sp h3{margin:0;font:800 22px/1.1 var(--display);text-transform:uppercase;letter-spacing:.04em;overflow-wrap:anywhere}
-.sp dl{display:grid;gap:4px;margin:0}
-.sp dl div{display:flex;justify-content:space-between;gap:10px;font-size:14px}
-.sp dt{color:var(--mute)}
-.sp dd{margin:0;text-align:right;font-weight:600;overflow-wrap:anywhere}
-.bar{height:6px;background:var(--panel-2);position:relative}
-.bar::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--v);background:var(--amber)}
-.pr{font:800 20px var(--display);letter-spacing:.03em;font-variant-numeric:tabular-nums}
-.sp .btn{width:100%;font-size:15px;min-height:42px;padding:8px 12px;opacity:.55;cursor:not-allowed}
-.empty{grid-column:1/-1;border:1px dashed var(--line);padding:24px 16px;text-align:center;color:var(--mute)}
-.cred{display:grid;gap:10px;margin:0}
-.cred div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;padding:12px 14px;background:var(--ink);border:1px solid var(--line)}
-.cred dt{color:var(--mute);font:600 13px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase}
-.cred dd{margin:0;font:800 22px/1.2 var(--display);letter-spacing:.04em;text-transform:uppercase}
-.idcard{display:grid;gap:8px;padding:20px;background:linear-gradient(135deg,var(--panel-2),var(--ink));border:1px solid var(--line)}
-.idcard .lab{font:600 12px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
-.idcard .num{font:900 clamp(44px,13vw,88px)/1 var(--display);letter-spacing:.08em;color:var(--amber);font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(255,182,39,.3);overflow-wrap:anywhere}
-.idcard .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;font-size:15px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:0}
-.stats div{display:grid;gap:6px;background:var(--ink);border:1px solid var(--line);padding:12px}
-.stats dt{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.stats dd{margin:0;font:900 34px/1 var(--display);font-variant-numeric:tabular-nums}
-.btn.danger{border-color:#6b2a2a;color:#ff9b9b}
+/* ----- discord ----- */
+.dc{gap:18px}
+.dtop{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
+.dtop h2{font-size:clamp(24px,5vw,32px)}
+.dact{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.dact .btn{min-height:42px;padding:8px 16px;font-size:16px}
+a.btn[hidden]{display:none!important}
+.pill{display:inline-flex;align-items:center;gap:8px;font:700 15px var(--body);letter-spacing:.04em;padding:8px 12px;border:1px solid var(--line);background:var(--ink);color:var(--chalk)}
+.pill::before{content:"";width:9px;height:9px;border-radius:50%;background:#3ba55d}
+.dsec{display:grid;gap:10px}
+.dsec h3{margin:0;font:600 13px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.mems{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.mem{display:flex;align-items:center;gap:10px;background:var(--ink);border:1px solid var(--line);padding:8px 10px;min-width:0}
+.av{position:relative;flex:none;width:34px;height:34px;border-radius:50%;background:var(--panel-2);display:grid;place-items:center;font:800 16px var(--display);color:var(--amber)}
+.av img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block}
+.av .st{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--ink)}
+.mn{display:grid;min-width:0}
+.mn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mn small{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chs{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.chs li{padding:6px 12px;border:1px solid var(--line);background:var(--ink);font-size:15px}
+.dmsg{margin:0;border:1px dashed var(--line);padding:16px;color:var(--mute);max-width:none!important}
+.dmsg b{color:var(--chalk)}
+.dup{margin:0;font-size:13px;color:var(--mute)}
 .top{flex-wrap:wrap}
 .tools{flex-wrap:wrap;justify-content:flex-end}
 .idchip{display:inline-flex;align-items:center;min-height:40px;padding:8px 12px;border:1px solid var(--line);background:var(--panel);color:var(--amber);font:700 14px var(--display);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;font-variant-numeric:tabular-nums}
@@ -222,15 +192,15 @@ select{font:600 16px var(--body);background:var(--ink);color:var(--chalk);border
 
 <div class="app">
   <div class="top">
-    <div class="mark">KZ<b>26</b><small id="ctx">Menú</small></div>
+    <div class="mark">KZ<b>26</b><small id="ctx">Inicio</small></div>
     <div class="tools">
-      <a class="idchip" id="bId" href="#perfil" title="Ver mi perfil">ID</a>
+      <a class="idchip" id="bId" href="game/#perfil" title="Ver mi perfil">ID</a>
       <button id="bDev" type="button">Dispositivo: PC</button>
       <button id="bMute" type="button" aria-pressed="false">Sonido: sí</button>
     </div>
   </div>
   <div id="screen"></div>
-  <audio id="bgm" loop preload="auto" src="../../assets/jonasblakewood-background-music-618629.mp3"></audio>
+  <audio id="bgm" loop preload="auto" src="../assets/jonasblakewood-background-music-618629.mp3"></audio>
 </div>
 
 <script>
@@ -431,31 +401,42 @@ bMute.addEventListener('click', () => {
 
 /* ---------- inicio y plantilla ---------- */
 const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-function showHub() {
-  G.mode = 'hub';
+function showHome() {
+  G.mode = 'home';
   scr(`
-  <section class="home" aria-label="Menú principal">
+  <section class="home" aria-label="Pantalla de inicio">
     <canvas id="homeCv" aria-hidden="true"></canvas>
     <div class="hc">
-      <p class="hk">Menú principal</p>
-      <h1 class="ht sm" aria-label="KZ 26">
+      <p class="hk">Temporada 2026 · Liga arcade</p>
+      <h1 class="ht" aria-label="KZ 26">
         <span class="tk" aria-hidden="true"><i style="--d:0">K</i><i style="--d:1">Z</i></span>
         <span class="tn" aria-hidden="true"><i style="--d:2">2</i><i style="--d:3">6</i></span>
       </h1>
-      <nav aria-label="Menú principal">
-        <ul class="menu">
-          <li style="--i:0"><a class="mbtn primary" href="../../play/"><span>Jugar</span><span class="arr" aria-hidden="true">→</span></a></li>
-          <li style="--i:1"><a class="mbtn" href="#plantilla"><span>Plantilla</span><span class="arr" aria-hidden="true">→</span></a></li>
-          <li style="--i:2"><a class="mbtn" href="#tienda"><span>Tienda</span><span class="arr" aria-hidden="true">→</span></a></li>
-          <li style="--i:3"><a class="mbtn" href="#codigos"><span>Reclamar códigos</span><small>Pendiente</small></a></li>
-          <li style="--i:4"><a class="mbtn" href="#actualizaciones"><span>Actualizaciones</span><small>Pendiente</small></a></li>
-          <li style="--i:5"><a class="mbtn" href="#creditos"><span>Créditos</span><span class="arr" aria-hidden="true">→</span></a></li>
-        </ul>
-      </nav>
+      <p class="hs">Pasa, define y sube a lo más alto de la tabla.</p>
+      <div class="hb">
+        <a class="btn primary" href="game/">Ir al inicio</a>
+        <a class="btn" href="game/#plantilla">Plantilla</a>
+        <a class="btn" href="game/#tienda">Tienda</a>
+      </div>
       <p class="hm" id="homeMusicHint" ${musicStarted ? 'hidden' : ''}>Toca cualquier botón para activar la música</p>
     </div>
-  </section>`, 'Menú');
+  </section>
+  <section class="card dc" aria-label="Comunidad">
+    <div class="dtop">
+      <div>
+        <p class="kicker">Comunidad</p>
+        <h2 id="dName">Discord de KZ 26</h2>
+      </div>
+      <div class="dact">
+        <span class="pill" id="dCount" hidden></span>
+        <a class="btn primary" id="dInvite" href="#" target="_blank" rel="noopener noreferrer" hidden>Unirse</a>
+        <button class="btn" type="button" data-act="d-reload">Actualizar</button>
+      </div>
+    </div>
+    <div id="dBody" aria-live="polite"></div>
+  </section>`, 'Inicio');
   document.querySelector('.app').classList.add('is-home');
+  drawDiscord(); loadDiscord(false);
 }
 function drawHome(ts) {
   const c = document.getElementById('homeCv'); if (!c) return;
@@ -532,205 +513,86 @@ function drawHome(ts) {
   for (let i = 0; i < 3; i++) { const a = t * 6 + i * 2.094; g.beginPath(); g.arc(bp[0] + Math.cos(a) * br * .5, bp[1] - lift * 8 + Math.sin(a) * br * .5, br * .24, 0, 7); g.fill(); }
 }
 
-const POS_NAME = ['Portero', 'Defensa', 'Volante izquierdo', 'Volante derecho'];
-const POS_DESC = ['Cubre el arco y despeja el balón.', 'Se queda atrás y corta los ataques.', 'Sube por la banda y abre la cancha.', 'Sube por la banda y busca el pase.'];
-const SQUAD_NUM = [1, 4, 10, 7];
-function showSquad() {
-  G.mode = 'squad';
-  const c = G.cfg, fg = lum(c.color) > .6 ? '#10161f' : '#ffffff';
-  const F = [[.035, .5], [.22, .5], [.46, .27], [.46, .73]];
-  let svg = '<rect width="800" height="480" fill="#2e7d46"/>';
-  for (let i = 0; i < 10; i += 2) svg += `<rect x="${(i + 1) * 80}" width="80" height="480" fill="#296f40"/>`;
-  svg += '<g fill="none" stroke="rgba(240,237,227,.78)" stroke-width="3"><rect x="2" y="2" width="796" height="476"/><path d="M400 2V478"/><circle cx="400" cy="240" r="62"/><rect x="2" y="120" width="110" height="240"/><rect x="688" y="120" width="110" height="240"/></g>';
-  F.forEach((f, i) => {
-    const x = f[0] * 800, y = f[1] * 480, gk = i === 0;
-    svg += `<circle cx="${x}" cy="${y}" r="${gk ? 25 : 22}" fill="${gk ? '#111827' : esc(c.color)}" stroke="${gk ? esc(c.color) : '#ffffff'}" stroke-width="5"/><text x="${x}" y="${y + 1}" text-anchor="middle" dominant-baseline="middle" font-size="22" font-weight="700" fill="${gk ? '#ffffff' : fg}" font-family="Barlow Semi Condensed,system-ui,sans-serif">${SQUAD_NUM[i]}</text>`;
-  });
-  svg += '<text x="790" y="466" text-anchor="end" font-size="18" fill="rgba(240,237,227,.7)" font-family="Barlow Semi Condensed,system-ui,sans-serif">Ataque →</text>';
-  const cards = [0, 1, 2, 3].map(i => `
-    <div class="pc">
-      <div class="num" style="background:${i === 0 ? '#111827' : esc(c.color)};border-color:${i === 0 ? esc(c.color) : '#fff'};color:${i === 0 ? '#fff' : fg}">${SQUAD_NUM[i]}</div>
-      <div class="pos">${POS_NAME[i]}</div>
-      <input type="text" maxlength="14" data-pn="${i}" value="${esc(c.names[i])}" aria-label="Nombre del ${POS_NAME[i].toLowerCase()}" autocomplete="off">
-      <div class="ds">${POS_DESC[i]}</div>
-    </div>`).join('');
-  scr(`<section class="card">
-    <p class="kicker">Plantilla · ${esc(c.name)}</p>
-    <h1>Tus cuatro titulares</h1>
-    <p>Pon el nombre que quieras. Aparece en pantalla cuando ese jugador marca un gol. En la cancha manejas al jugador más cercano al balón.</p>
-    <div class="squad">
-      <svg viewBox="0 0 800 480" role="img" aria-label="Posiciones iniciales del equipo">${svg}</svg>
-      <div class="pcs">${cards}</div>
-    </div>
-    <div class="row">
-      <a class="btn primary" href="../../play/">Jugar</a>
-      <a class="btn" href="#menu">Volver al menú</a>
-    </div>
-  </section>`, 'Plantilla');
-}
-screenEl.addEventListener('input', e => {
-  const t = e.target;
-  if (t && t.dataset && t.dataset.pn !== undefined) { G.cfg.names[Number(t.dataset.pn)] = t.value.slice(0, 14); saveCfg(); }
-});
-
 function updDev() { bDev.textContent = 'Dispositivo: ' + (getDevice() === 'mobile' ? 'Celular' : 'PC'); }
-/* Catálogo de la tienda (datos del archivo "Jugadores - Hoja 1"). Precios en kicks. */
-const SHOP_PLAYERS = [
-  { name: 'CrisFut', num: 10, rating: 93, nation: 'CrisPantolo', team: 'Pantolo Club', price: 600000 },
-  { name: 'Lucas C.', num: 32, rating: 76, nation: 'El Puente', team: 'Harling UF', price: 103395 },
-  { name: 'Felipe N. (P)', num: 1, rating: 82, nation: 'El Puente', team: 'Harling UF', price: 100000 },
-  { name: 'Tomás V.', num: 12, rating: 86, nation: 'CrisPantolo', team: 'Barcos y Piratas', price: 300000 },
-  { name: 'Cristóbal R.', num: 14, rating: 92, nation: 'El Puente', team: 'Barcos y Piratas', price: 500000 },
-  { name: 'Matías H.', num: 20, rating: 78, nation: 'El Puente', team: 'Harling UF', price: 100000 },
-  { name: 'Tomás D.', num: 22, rating: 80, nation: 'El Puente', team: 'Harling UF', price: 130000 },
-  { name: 'Álvaro Guzmán', num: 50, rating: 84, nation: 'El Puente', team: 'Harling UF', price: 145910 },
-  { name: 'Diego C.', num: 34, rating: 90, nation: 'El Puente', team: 'Harling UF', price: 200000 },
-  { name: 'Ignacio S.', num: 37, rating: 91, nation: 'El Puente', team: 'Harling UF', price: 250000 },
-  { name: 'Benjamín F.', num: 40, rating: 92, nation: 'El Puente', team: 'Harling UF', price: 300000 }
-];
-const shopState = { nation: 'all', sort: 'rating' };
-const fmtKicks = n => n.toLocaleString('en-US') + ' kicks';
-function shopList() {
-  const by = {
-    rating: (a, b) => b.rating - a.rating || a.price - b.price,
-    'price-asc': (a, b) => a.price - b.price || b.rating - a.rating,
-    'price-desc': (a, b) => b.price - a.price || b.rating - a.rating,
-    name: (a, b) => a.name.localeCompare(b.name, 'es')
-  };
-  return SHOP_PLAYERS.filter(p => shopState.nation === 'all' || p.nation === shopState.nation).sort(by[shopState.sort] || by.rating);
-}
-function drawShop() {
-  const l = shopList(), g = document.getElementById('shopGrid'), c = document.getElementById('shopCount');
-  if (g) g.innerHTML = l.length ? l.map(p => `
-    <article class="sp">
-      <div class="sp-top"><span class="dor" aria-label="Dorsal ${p.num}">${p.num}</span><span class="val"><b>${p.rating}</b><small>Valoración</small></span></div>
-      <h3>${esc(p.name)}</h3>
-      <dl><div><dt>Selección</dt><dd>${esc(p.nation)}</dd></div><div><dt>Equipo</dt><dd>${esc(p.team)}</dd></div></dl>
-      <div class="bar" style="--v:${p.rating}%" aria-hidden="true"></div>
-      <span class="pr">${fmtKicks(p.price)}</span>
-      <button class="btn" type="button" disabled>Próximamente</button>
-    </article>`).join('') : '<div class="empty">No hay jugadores con ese filtro.</div>';
-  if (c) c.textContent = l.length + ' de ' + SHOP_PLAYERS.length + ' jugadores';
-}
-function showShop() {
-  G.mode = 'shop';
-  const nations = ['all'].concat([...new Set(SHOP_PLAYERS.map(p => p.nation))]);
-  const sorts = [['rating', 'Mayor valoración'], ['price-asc', 'Menor precio'], ['price-desc', 'Mayor precio'], ['name', 'Nombre A-Z']];
-  scr(`<section class="card">
-    <p class="kicker">Tienda</p>
-    <h1>Jugadores</h1>
-    <p>Mira a los jugadores disponibles. La compra estará lista muy pronto.</p>
-    <div class="shopbar">
-      <fieldset><legend>Selección</legend>
-        <div class="row">${nations.map(n => `<label class="seg"><input type="radio" name="nat" value="${esc(n)}" ${n === shopState.nation ? 'checked' : ''}><span>${n === 'all' ? 'Todas' : esc(n)}</span></label>`).join('')}</div>
-      </fieldset>
-      <div style="display:grid;gap:10px"><label class="lbl" for="shopSort">Ordenar por</label>
-        <select id="shopSort">${sorts.map(o => `<option value="${o[0]}" ${o[0] === shopState.sort ? 'selected' : ''}>${o[1]}</option>`).join('')}</select>
-      </div>
+function showDevice() {
+  G.mode = 'device'; const cur = getDevice();
+  scr(`<section class="dev" aria-labelledby="dq">
+    <p class="kicker">Antes de empezar</p>
+    <h1 id="dq">¿Eres de celular o PC?</h1>
+    <p class="sub">Así te mostramos los controles correctos. Puedes cambiarlo cuando quieras.</p>
+    <div class="opts">
+      <button class="opt ${cur === 'mobile' ? 'on' : ''}" type="button" data-act="dev-mobile"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="19" y="6" width="26" height="52" rx="4"/><path d="M28 51h8"/></svg>Celular</button>
+      <button class="opt ${cur === 'pc' ? 'on' : ''}" type="button" data-act="dev-pc"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="10" width="52" height="34" rx="3"/><path d="M24 54h16M32 44v10"/></svg>PC</button>
     </div>
-    <p class="lbl" id="shopCount" aria-live="polite"></p>
-    <div class="shop" id="shopGrid"></div>
-    <div class="row"><a class="btn primary" href="#menu">Volver al menú</a></div>
-  </section>`, 'Tienda');
-  drawShop();
+  </section>`, 'Dispositivo');
 }
-function showPending(title) {
-  G.mode = 'pending';
-  scr(`<section class="card">
-    <p class="kicker">${esc(title)}</p>
-    <h1>Pendiente</h1>
-    <p>Esta sección todavía no está lista. Aparecerá aquí cuando esté disponible.</p>
-    <div class="row"><a class="btn primary" href="#menu">Volver al menú</a></div>
-  </section>`, title);
+/* ---------- Discord (API del widget) ---------- */
+const DISCORD_ID = '1560868271337775184';
+const DISCORD_URL = 'https://discord.com/api/guilds/' + DISCORD_ID + '/widget.json';
+const AV_HOSTS = ['cdn.discordapp.com', 'media.discordapp.net'];
+const INV_HOSTS = ['discord.com', 'www.discord.com', 'discord.gg'];
+const ST = { online: ['En línea', '#3ba55d'], idle: ['Ausente', '#faa61a'], dnd: ['No molestar', '#ed4245'] };
+let dState = { kind: 'loading' }, dBusy = false;
+function safeUrl(u, hosts) {
+  try { const x = new URL(u); return x.protocol === 'https:' && hosts.includes(x.hostname) ? x.href : ''; } catch (e) { return ''; }
 }
-/* Agrega aquí más créditos con el formato { role: 'Rol', name: 'Nombre' } */
-const CREDITS = [
-  { role: 'Música de fondo', name: 'Jonas Blakewood' }
-];
-function showCredits() {
-  G.mode = 'credits';
-  scr(`<section class="card">
-    <p class="kicker">Créditos</p>
-    <h1>KZ 26</h1>
-    <dl class="cred">${CREDITS.map(c => `<div><dt>${esc(c.role)}</dt><dd>${esc(c.name)}</dd></div>`).join('')}</dl>
-    <div class="row"><a class="btn primary" href="#menu">Volver al menú</a></div>
-  </section>`, 'Créditos');
-}
-async function copyText(t) {
-  try { await navigator.clipboard.writeText(t); return true; } catch (e) { /* alternativa */ }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;opacity:0';
-    document.body.appendChild(ta); ta.select();
-    const ok = document.execCommand('copy'); ta.remove(); return ok;
-  } catch (e) { return false; }
-}
-function showProfile() {
-  G.mode = 'profile';
-  PROFILE = loadProfile(); updId();
-  const p = PROFILE, s = p.stats, c = G.cfg;
-  const since = new Date(p.created).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
-  const rows = [['Partidos', s.played], ['Victorias', s.won], ['Empates', s.drawn], ['Derrotas', s.lost], ['Goles a favor', s.gf], ['Goles en contra', s.ga], ['Ligas completadas', s.leagues], ['Títulos', s.titles]];
-  scr(`<section class="card">
-    <p class="kicker">Perfil</p>
-    <h1>Tu carnet</h1>
-    <div class="idcard">
-      <span class="lab">ID de jugador</span>
-      <span class="num" id="pid">${esc(p.id)}</span>
-      <div class="meta"><i class="dot" style="background:${esc(c.color)};box-shadow:0 0 0 2px #fff"></i><span>${esc(c.name)}</span><span>Jugador desde el ${esc(since)}</span></div>
-    </div>
-    <dl class="stats">${rows.map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('')}</dl>
-    <p class="lbl" id="pmsg" aria-live="polite"></p>
-    <div class="row">
-      <button class="btn primary" type="button" data-act="copy-id">Copiar ID</button>
-      <a class="btn" href="#menu">Volver al menú</a>
-      <button class="btn danger" type="button" data-act="wipe">Borrar mis datos</button>
-    </div>
-    <p>Tu ID y tu progreso se guardan solo en este navegador. Si borras los datos del sitio o juegas desde otro navegador o dispositivo, se crea un ID nuevo.</p>
-  </section>`, 'Perfil');
-}
-function profileMsg(t) { const el = document.getElementById('pmsg'); if (el) el.textContent = t; }
-function route(first) {
-  const r = location.hash.replace(/^#/, '');
-  if (r === 'plantilla') showSquad();
-  else if (r === 'tienda') showShop();
-  else if (r === 'codigos') showPending('Reclamar códigos');
-  else if (r === 'actualizaciones') showPending('Actualizaciones');
-  else if (r === 'creditos') showCredits();
-  else if (r === 'perfil') showProfile();
-  else showHub();
-  if (!first) {
-    try { window.scrollTo(0, 0); } catch (e) { /* ok */ }
-    const h = screenEl.querySelector('h1');
-    if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { /* ok */ } }
+function drawDiscord() {
+  const body = document.getElementById('dBody'); if (!body) return;
+  const nm = $('#dName'), cnt = $('#dCount'), inv = $('#dInvite'), s = dState;
+  if (s.kind === 'ok') {
+    const d = s.data;
+    nm.textContent = d.name || 'Discord de KZ 26';
+    const n = Number.isFinite(d.presence_count) ? d.presence_count : d.members.length;
+    cnt.textContent = n + ' en línea'; cnt.hidden = false;
+    const link = safeUrl(d.instant_invite, INV_HOSTS);
+    if (link) { inv.href = link; inv.hidden = false; } else inv.hidden = true;
+    const mem = d.members.slice(0, 24).map(m => {
+      const st = ST[m.status] || ST.online, nmm = String(m.nick || m.username || '?'), av = safeUrl(m.avatar_url, AV_HOSTS);
+      const sub = m.game && m.game.name ? 'Jugando ' + m.game.name : st[0];
+      return `<div class="mem"><span class="av">${av ? `<img src="${esc(av)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : esc(nmm.charAt(0).toUpperCase())}<i class="st" style="background:${st[1]}"></i></span><span class="mn"><b>${esc(nmm)}</b><small>${esc(sub)}</small></span></div>`;
+    }).join('');
+    const chs = (Array.isArray(d.channels) ? d.channels : []).slice().sort((a, b) => (a.position || 0) - (b.position || 0)).slice(0, 8)
+      .map(c => `<li>${esc(c.name)}</li>`).join('');
+    const hh = new Date(s.at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    body.innerHTML = `
+      <div class="dsec"><h3>Conectados</h3>${mem ? `<div class="mems">${mem}</div>` : '<p class="dmsg">Nadie conectado en este momento.</p>'}</div>
+      ${chs ? `<div class="dsec"><h3>Canales de voz</h3><ul class="chs">${chs}</ul></div>` : ''}
+      <p class="dup">Actualizado a las ${esc(hh)}</p>`;
+  } else {
+    cnt.hidden = true; inv.hidden = true;
+    body.innerHTML = s.kind === 'loading' ? '<p class="dmsg">Conectando con Discord…</p>'
+      : s.kind === 'off' ? '<div class="dmsg"><b>El widget del servidor está desactivado.</b><br>Discord no entrega datos mientras esté apagado. Un administrador debe ir a Ajustes del servidor → Widget y activar el widget del servidor. Después pulsa Actualizar.</div>'
+      : '<p class="dmsg">No pudimos conectar con Discord. Revisa tu conexión y pulsa Actualizar.</p>';
   }
 }
-addEventListener('hashchange', () => route(false));
-bDev.addEventListener('click', () => { location.href = '../#dispositivo'; });
+async function loadDiscord(force) {
+  if (dBusy) return;
+  if (!force && dState.kind === 'ok' && Date.now() - dState.at < 30000) { drawDiscord(); return; }
+  dBusy = true;
+  if (dState.kind !== 'ok') { dState = { kind: 'loading' }; drawDiscord(); }
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const r = await fetch(DISCORD_URL, { signal: ctl.signal, cache: 'no-store' });
+    let j = null; try { j = await r.json(); } catch (e) { /* sin cuerpo */ }
+    if (r.status === 403 || (j && j.code === 50004)) dState = { kind: 'off' };
+    else if (r.ok && j && Array.isArray(j.members)) dState = { kind: 'ok', data: j, at: Date.now() };
+    else if (dState.kind !== 'ok') dState = { kind: 'error' };
+  } catch (e) {
+    if (dState.kind !== 'ok') dState = { kind: 'error' };
+  } finally { clearTimeout(to); dBusy = false; drawDiscord(); }
+}
+bDev.addEventListener('click', () => { audio(); showDevice(); });
 screenEl.addEventListener('click', e => {
   if (e.target.closest('a,button')) { audio(); tone(660, .06, 'square', .03); }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
-  if (a === 'copy-id') copyText(PROFILE.id).then(ok => profileMsg(ok ? 'ID copiado' : 'No se pudo copiar. Selecciónalo y cópialo a mano.'));
-  else if (a === 'wipe') {
-    if (b.dataset.armed === '1') {
-      try { localStorage.removeItem(PKEY); localStorage.removeItem('kz26.cfg'); } catch (x) { /* ok */ }
-      G.cfg = loadCfg(); PROFILE = loadProfile(); updId(); showProfile();
-      profileMsg('Datos borrados. Tienes un ID nuevo.');
-    } else {
-      b.dataset.armed = '1'; b.textContent = '¿Seguro? Pulsa otra vez';
-      setTimeout(() => { if (b.isConnected) { b.dataset.armed = ''; b.textContent = 'Borrar mis datos'; } }, 4000);
-    }
-  }
+  if (a === 'dev-mobile' || a === 'dev-pc') { setDevice(a === 'dev-mobile' ? 'mobile' : 'pc'); updDev(); showHome(); }
+  else if (a === 'd-reload') loadDiscord(true);
 });
-screenEl.addEventListener('change', e => {
-  const t = e.target;
-  if (t && t.name === 'nat') { shopState.nation = t.value; drawShop(); }
-  else if (t && t.id === 'shopSort') { shopState.sort = t.value; drawShop(); }
-});
-function frame(ts) { requestAnimationFrame(frame); if (G.mode === 'hub') drawHome(ts); }
+function frame(ts) { requestAnimationFrame(frame); if (G.mode === 'home') drawHome(ts); }
 requestAnimationFrame(frame);
+setInterval(() => { if (!document.hidden && G.mode === 'home') loadDiscord(false); }, 60000);
 updDev();
-route(true);
+if (!deviceAsked() || location.hash === '#dispositivo') showDevice(); else showHome();
 })();
 </script>
