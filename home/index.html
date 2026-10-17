@@ -170,6 +170,18 @@ p a{color:var(--amber)}
   .mark small{display:none}
   #hud{padding:8px 10px;gap:8px}
 }
+.comm{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.comm iframe{max-width:100%;border:0;display:block}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.sp{display:grid;gap:8px;justify-items:start;background:var(--ink);border:1px solid var(--line);padding:14px;min-width:0}
+.sp .ph{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--panel-2);display:grid;place-items:center;font:900 56px var(--display);color:var(--amber)}
+.sp h3{margin:0;font:800 22px/1.1 var(--display);text-transform:uppercase;letter-spacing:.04em}
+.sp .pos{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.sp p{margin:0;font-size:14px}
+.sp .pr{font:800 20px var(--display);color:var(--chalk)}
+.sp .btn{width:100%;font-size:15px;min-height:42px;padding:8px 12px;opacity:.6;cursor:not-allowed}
+.empty{border:1px dashed var(--line);padding:28px 16px;text-align:center;color:var(--mute)}
+@media (max-width:720px){.comm{grid-template-columns:minmax(0,1fr);justify-items:center}}
 </style>
 
 <div class="app">
@@ -359,6 +371,14 @@ function showHome() {
       </div>
       <p class="hm" id="homeMusicHint" ${musicStarted ? 'hidden' : ''}>Toca cualquier botón para activar la música</p>
     </div>
+  </section>
+  <section class="card comm" aria-label="Comunidad">
+    <div style="display:grid;gap:12px;align-content:center">
+      <p class="kicker">Comunidad</p>
+      <h2>Únete al Discord</h2>
+      <p>Habla con otros jugadores, comparte tus goles y entérate de las novedades de KZ 26.</p>
+    </div>
+    <iframe src="https://discord.com/widget?id=1560868271337775184&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Servidor de Discord de KZ 26"></iframe>
   </section>`, 'Inicio');
   document.querySelector('.app').classList.add('is-home');
 }
@@ -491,12 +511,25 @@ function showDevice() {
     </div>
   </section>`, 'Dispositivo');
 }
+/* Catálogo de la tienda. Agrega aquí cada jugador con este formato:
+   { name: 'Nombre', pos: 'Delantero', num: 9, price: '1.500', desc: 'Texto corto', img: '../assets/jugadores/nombre.png' }
+   Todos los campos menos name son opcionales. */
+const SHOP_PLAYERS = [];
 function showShop() {
   G.mode = 'shop';
+  const cards = SHOP_PLAYERS.map(pl => `
+    <article class="sp">
+      ${pl.img ? `<img class="ph" src="${esc(pl.img)}" alt="${esc(pl.name)}">` : `<div class="ph" aria-hidden="true">${esc(pl.num !== undefined ? pl.num : '?')}</div>`}
+      ${pl.pos ? `<span class="pos">${esc(pl.pos)}</span>` : ''}
+      <h3>${esc(pl.name)}</h3>
+      ${pl.desc ? `<p>${esc(pl.desc)}</p>` : ''}
+      ${pl.price !== undefined && pl.price !== '' ? `<span class="pr">${esc(pl.price)}</span>` : ''}
+      <button class="btn" type="button" disabled>Próximamente</button>
+    </article>`).join('');
   scr(`<section class="card">
     <p class="kicker">Tienda</p>
-    <h1>Próximamente</h1>
-    <p>Estamos preparando la tienda de KZ 26. Muy pronto la veremos juntos.</p>
+    <h1>Jugadores</h1>
+    ${cards ? `<div class="shop">${cards}</div>` : '<div class="empty">Todavía no hay jugadores en la tienda. Aparecerán aquí muy pronto.</div>'}
     <div class="row"><button class="btn primary" type="button" data-act="home">Volver al inicio</button></div>
   </section>`, 'Tienda');
 }
