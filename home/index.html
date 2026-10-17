@@ -156,32 +156,34 @@ p a{color:var(--amber)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,182,39,.5)}50%{box-shadow:0 0 0 12px rgba(255,182,39,0)}}
 @media (prefers-reduced-motion:reduce){.home *{animation:none!important}}
 
-/* ----- plantilla ----- */
-.squad{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
-.squad svg{width:100%;height:auto;display:block;border:1px solid var(--line)}
-.pcs{display:grid;gap:10px;min-width:0}
-.pc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 14px;align-items:center;background:var(--ink);border:1px solid var(--line);padding:10px 12px}
-.pc .num{grid-row:span 3;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:900 22px var(--display);border:3px solid #fff}
-.pc .pos{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
-.pc input[type=text]{font-size:18px;min-height:40px;padding:6px 10px;max-width:none}
-.pc .ds{font-size:14px;color:var(--mute)}
-@media (max-width:720px){.squad{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:480px){
   .mark small{display:none}
   #hud{padding:8px 10px;gap:8px}
 }
-.comm{grid-template-columns:minmax(0,1fr) auto;align-items:center}
-.comm iframe{max-width:100%;border:0;display:block}
-.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
-.sp{display:grid;gap:8px;justify-items:start;background:var(--ink);border:1px solid var(--line);padding:14px;min-width:0}
-.sp .ph{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--panel-2);display:grid;place-items:center;font:900 56px var(--display);color:var(--amber)}
-.sp h3{margin:0;font:800 22px/1.1 var(--display);text-transform:uppercase;letter-spacing:.04em}
-.sp .pos{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
-.sp p{margin:0;font-size:14px}
-.sp .pr{font:800 20px var(--display);color:var(--chalk)}
-.sp .btn{width:100%;font-size:15px;min-height:42px;padding:8px 12px;opacity:.6;cursor:not-allowed}
-.empty{border:1px dashed var(--line);padding:28px 16px;text-align:center;color:var(--mute)}
-@media (max-width:720px){.comm{grid-template-columns:minmax(0,1fr);justify-items:center}}
+/* ----- discord ----- */
+.dc{gap:18px}
+.dtop{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
+.dtop h2{font-size:clamp(24px,5vw,32px)}
+.dact{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.dact .btn{min-height:42px;padding:8px 16px;font-size:16px}
+a.btn[hidden]{display:none!important}
+.pill{display:inline-flex;align-items:center;gap:8px;font:700 15px var(--body);letter-spacing:.04em;padding:8px 12px;border:1px solid var(--line);background:var(--ink);color:var(--chalk)}
+.pill::before{content:"";width:9px;height:9px;border-radius:50%;background:#3ba55d}
+.dsec{display:grid;gap:10px}
+.dsec h3{margin:0;font:600 13px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.mems{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.mem{display:flex;align-items:center;gap:10px;background:var(--ink);border:1px solid var(--line);padding:8px 10px;min-width:0}
+.av{position:relative;flex:none;width:34px;height:34px;border-radius:50%;background:var(--panel-2);display:grid;place-items:center;font:800 16px var(--display);color:var(--amber)}
+.av img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block}
+.av .st{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--ink)}
+.mn{display:grid;min-width:0}
+.mn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mn small{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chs{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.chs li{padding:6px 12px;border:1px solid var(--line);background:var(--ink);font-size:15px}
+.dmsg{margin:0;border:1px dashed var(--line);padding:16px;color:var(--mute);max-width:none!important}
+.dmsg b{color:var(--chalk)}
+.dup{margin:0;font-size:13px;color:var(--mute)}
 </style>
 
 <div class="app">
@@ -257,6 +259,7 @@ function scr(html, ctxText) {
 }
 /* ---------- sonido ---------- */
 let actx = null, muted = false;
+try { muted = localStorage.getItem('kz26.muted') === '1'; } catch (e) { /* ok */ }
 function audio() {
   try {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -285,6 +288,8 @@ const sfx = {
 };
 /* música de fondo: el mp3 pedido; si no carga, una melodía sintetizada */
 const bgm = $('#bgm');
+try { const t0 = parseFloat(sessionStorage.getItem('kz26.t')); if (t0 > 0) bgm.addEventListener('loadedmetadata', () => { try { if (t0 < bgm.duration) bgm.currentTime = t0; } catch (e) { /* ok */ } }, { once: true }); } catch (e) { /* ok */ }
+addEventListener('pagehide', () => { try { sessionStorage.setItem('kz26.t', String(bgm.currentTime || 0)); } catch (e) { /* ok */ } });
 let musicStarted = false, bgmFailed = false, synth = null, musicVol = .55;
 function noteHz(n) { return 440 * Math.pow(2, (n - 69) / 12); }
 function synthNote(n, t, d, v, type) {
@@ -342,10 +347,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) { try { bgm.pause(); } catch (e) { /* ok */ } if (actx && synth) actx.suspend().catch(() => {}); }
   else if (musicStarted && !muted) { playMusic(); if (actx && actx.state === 'suspended') actx.resume().catch(() => {}); }
 });
-try { bgm.volume = musicVol; const p0 = bgm.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch (e) { /* ok */ }
+try { bgm.volume = musicVol; const p0 = muted ? null : bgm.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch (e) { /* ok */ }
 
+bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí'); bMute.setAttribute('aria-pressed', String(muted));
 bMute.addEventListener('click', () => {
-  muted = !muted; bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí');
+  muted = !muted; try { localStorage.setItem('kz26.muted', muted ? '1' : '0'); } catch (e) { /* ok */ }
+  bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí');
   bMute.setAttribute('aria-pressed', String(muted));
   if (muted) stopMusic(); else { musicStarted = true; hideMusicHint(); playMusic(); }
 });
@@ -365,22 +372,29 @@ function showHome() {
       </h1>
       <p class="hs">Pasa, define y sube a lo más alto de la tabla.</p>
       <div class="hb">
-        <a class="btn primary" href="../play/">Jugar</a>
-        <button class="btn" type="button" data-act="squad">Plantilla</button>
-        <button class="btn" type="button" data-act="shop">Tienda</button>
+        <a class="btn primary" href="game/">Ir al inicio</a>
+        <a class="btn" href="game/#plantilla">Plantilla</a>
+        <a class="btn" href="game/#tienda">Tienda</a>
       </div>
       <p class="hm" id="homeMusicHint" ${musicStarted ? 'hidden' : ''}>Toca cualquier botón para activar la música</p>
     </div>
   </section>
-  <section class="card comm" aria-label="Comunidad">
-    <div style="display:grid;gap:12px;align-content:center">
-      <p class="kicker">Comunidad</p>
-      <h2>Únete al Discord</h2>
-      <p>Habla con otros jugadores, comparte tus goles y entérate de las novedades de KZ 26.</p>
+  <section class="card dc" aria-label="Comunidad">
+    <div class="dtop">
+      <div>
+        <p class="kicker">Comunidad</p>
+        <h2 id="dName">Discord de KZ 26</h2>
+      </div>
+      <div class="dact">
+        <span class="pill" id="dCount" hidden></span>
+        <a class="btn primary" id="dInvite" href="#" target="_blank" rel="noopener noreferrer" hidden>Unirse</a>
+        <button class="btn" type="button" data-act="d-reload">Actualizar</button>
+      </div>
     </div>
-    <iframe src="https://discord.com/widget?id=1560868271337775184&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" title="Servidor de Discord de KZ 26"></iframe>
+    <div id="dBody" aria-live="polite"></div>
   </section>`, 'Inicio');
   document.querySelector('.app').classList.add('is-home');
+  drawDiscord(); loadDiscord(false);
 }
 function drawHome(ts) {
   const c = document.getElementById('homeCv'); if (!c) return;
@@ -457,47 +471,6 @@ function drawHome(ts) {
   for (let i = 0; i < 3; i++) { const a = t * 6 + i * 2.094; g.beginPath(); g.arc(bp[0] + Math.cos(a) * br * .5, bp[1] - lift * 8 + Math.sin(a) * br * .5, br * .24, 0, 7); g.fill(); }
 }
 
-const POS_NAME = ['Portero', 'Defensa', 'Volante izquierdo', 'Volante derecho'];
-const POS_DESC = ['Cubre el arco y despeja el balón.', 'Se queda atrás y corta los ataques.', 'Sube por la banda y abre la cancha.', 'Sube por la banda y busca el pase.'];
-const SQUAD_NUM = [1, 4, 10, 7];
-function showSquad() {
-  G.mode = 'squad';
-  const c = G.cfg, fg = lum(c.color) > .6 ? '#10161f' : '#ffffff';
-  const F = [[.035, .5], [.22, .5], [.46, .27], [.46, .73]];
-  let svg = '<rect width="800" height="480" fill="#2e7d46"/>';
-  for (let i = 0; i < 10; i += 2) svg += `<rect x="${(i + 1) * 80}" width="80" height="480" fill="#296f40"/>`;
-  svg += '<g fill="none" stroke="rgba(240,237,227,.78)" stroke-width="3"><rect x="2" y="2" width="796" height="476"/><path d="M400 2V478"/><circle cx="400" cy="240" r="62"/><rect x="2" y="120" width="110" height="240"/><rect x="688" y="120" width="110" height="240"/></g>';
-  F.forEach((f, i) => {
-    const x = f[0] * 800, y = f[1] * 480, gk = i === 0;
-    svg += `<circle cx="${x}" cy="${y}" r="${gk ? 25 : 22}" fill="${gk ? '#111827' : esc(c.color)}" stroke="${gk ? esc(c.color) : '#ffffff'}" stroke-width="5"/><text x="${x}" y="${y + 1}" text-anchor="middle" dominant-baseline="middle" font-size="22" font-weight="700" fill="${gk ? '#ffffff' : fg}" font-family="Barlow Semi Condensed,system-ui,sans-serif">${SQUAD_NUM[i]}</text>`;
-  });
-  svg += '<text x="790" y="466" text-anchor="end" font-size="18" fill="rgba(240,237,227,.7)" font-family="Barlow Semi Condensed,system-ui,sans-serif">Ataque →</text>';
-  const cards = [0, 1, 2, 3].map(i => `
-    <div class="pc">
-      <div class="num" style="background:${i === 0 ? '#111827' : esc(c.color)};border-color:${i === 0 ? esc(c.color) : '#fff'};color:${i === 0 ? '#fff' : fg}">${SQUAD_NUM[i]}</div>
-      <div class="pos">${POS_NAME[i]}</div>
-      <input type="text" maxlength="14" data-pn="${i}" value="${esc(c.names[i])}" aria-label="Nombre del ${POS_NAME[i].toLowerCase()}" autocomplete="off">
-      <div class="ds">${POS_DESC[i]}</div>
-    </div>`).join('');
-  scr(`<section class="card">
-    <p class="kicker">Plantilla · ${esc(c.name)}</p>
-    <h1>Tus cuatro titulares</h1>
-    <p>Pon el nombre que quieras. Aparece en pantalla cuando ese jugador marca un gol. En la cancha manejas al jugador más cercano al balón.</p>
-    <div class="squad">
-      <svg viewBox="0 0 800 480" role="img" aria-label="Posiciones iniciales del equipo">${svg}</svg>
-      <div class="pcs">${cards}</div>
-    </div>
-    <div class="row">
-      <a class="btn primary" href="../play/">Jugar</a>
-      <button class="btn" type="button" data-act="home">Inicio</button>
-    </div>
-  </section>`, 'Plantilla');
-}
-screenEl.addEventListener('input', e => {
-  const t = e.target;
-  if (t && t.dataset && t.dataset.pn !== undefined) { G.cfg.names[Number(t.dataset.pn)] = t.value.slice(0, 14); saveCfg(); }
-});
-
 function updDev() { bDev.textContent = 'Dispositivo: ' + (getDevice() === 'mobile' ? 'Celular' : 'PC'); }
 function showDevice() {
   G.mode = 'device'; const cur = getDevice();
@@ -511,46 +484,73 @@ function showDevice() {
     </div>
   </section>`, 'Dispositivo');
 }
-/* Catálogo de la tienda. Agrega aquí cada jugador con este formato:
-   { name: 'Nombre', pos: 'Delantero', num: 9, price: '1.500', desc: 'Texto corto', img: '../assets/jugadores/nombre.png' }
-   Todos los campos menos name son opcionales. */
-const SHOP_PLAYERS = [];
-function showShop() {
-  G.mode = 'shop';
-  const cards = SHOP_PLAYERS.map(pl => `
-    <article class="sp">
-      ${pl.img ? `<img class="ph" src="${esc(pl.img)}" alt="${esc(pl.name)}">` : `<div class="ph" aria-hidden="true">${esc(pl.num !== undefined ? pl.num : '?')}</div>`}
-      ${pl.pos ? `<span class="pos">${esc(pl.pos)}</span>` : ''}
-      <h3>${esc(pl.name)}</h3>
-      ${pl.desc ? `<p>${esc(pl.desc)}</p>` : ''}
-      ${pl.price !== undefined && pl.price !== '' ? `<span class="pr">${esc(pl.price)}</span>` : ''}
-      <button class="btn" type="button" disabled>Próximamente</button>
-    </article>`).join('');
-  scr(`<section class="card">
-    <p class="kicker">Tienda</p>
-    <h1>Jugadores</h1>
-    ${cards ? `<div class="shop">${cards}</div>` : '<div class="empty">Todavía no hay jugadores en la tienda. Aparecerán aquí muy pronto.</div>'}
-    <div class="row"><button class="btn primary" type="button" data-act="home">Volver al inicio</button></div>
-  </section>`, 'Tienda');
+/* ---------- Discord (API del widget) ---------- */
+const DISCORD_ID = '1560868271337775184';
+const DISCORD_URL = 'https://discord.com/api/guilds/' + DISCORD_ID + '/widget.json';
+const AV_HOSTS = ['cdn.discordapp.com', 'media.discordapp.net'];
+const INV_HOSTS = ['discord.com', 'www.discord.com', 'discord.gg'];
+const ST = { online: ['En línea', '#3ba55d'], idle: ['Ausente', '#faa61a'], dnd: ['No molestar', '#ed4245'] };
+let dState = { kind: 'loading' }, dBusy = false;
+function safeUrl(u, hosts) {
+  try { const x = new URL(u); return x.protocol === 'https:' && hosts.includes(x.hostname) ? x.href : ''; } catch (e) { return ''; }
+}
+function drawDiscord() {
+  const body = document.getElementById('dBody'); if (!body) return;
+  const nm = $('#dName'), cnt = $('#dCount'), inv = $('#dInvite'), s = dState;
+  if (s.kind === 'ok') {
+    const d = s.data;
+    nm.textContent = d.name || 'Discord de KZ 26';
+    const n = Number.isFinite(d.presence_count) ? d.presence_count : d.members.length;
+    cnt.textContent = n + ' en línea'; cnt.hidden = false;
+    const link = safeUrl(d.instant_invite, INV_HOSTS);
+    if (link) { inv.href = link; inv.hidden = false; } else inv.hidden = true;
+    const mem = d.members.slice(0, 24).map(m => {
+      const st = ST[m.status] || ST.online, nmm = String(m.nick || m.username || '?'), av = safeUrl(m.avatar_url, AV_HOSTS);
+      const sub = m.game && m.game.name ? 'Jugando ' + m.game.name : st[0];
+      return `<div class="mem"><span class="av">${av ? `<img src="${esc(av)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : esc(nmm.charAt(0).toUpperCase())}<i class="st" style="background:${st[1]}"></i></span><span class="mn"><b>${esc(nmm)}</b><small>${esc(sub)}</small></span></div>`;
+    }).join('');
+    const chs = (Array.isArray(d.channels) ? d.channels : []).slice().sort((a, b) => (a.position || 0) - (b.position || 0)).slice(0, 8)
+      .map(c => `<li>${esc(c.name)}</li>`).join('');
+    const hh = new Date(s.at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    body.innerHTML = `
+      <div class="dsec"><h3>Conectados</h3>${mem ? `<div class="mems">${mem}</div>` : '<p class="dmsg">Nadie conectado en este momento.</p>'}</div>
+      ${chs ? `<div class="dsec"><h3>Canales de voz</h3><ul class="chs">${chs}</ul></div>` : ''}
+      <p class="dup">Actualizado a las ${esc(hh)}</p>`;
+  } else {
+    cnt.hidden = true; inv.hidden = true;
+    body.innerHTML = s.kind === 'loading' ? '<p class="dmsg">Conectando con Discord…</p>'
+      : s.kind === 'off' ? '<div class="dmsg"><b>El widget del servidor está desactivado.</b><br>Discord no entrega datos mientras esté apagado. Un administrador debe ir a Ajustes del servidor → Widget y activar el widget del servidor. Después pulsa Actualizar.</div>'
+      : '<p class="dmsg">No pudimos conectar con Discord. Revisa tu conexión y pulsa Actualizar.</p>';
+  }
+}
+async function loadDiscord(force) {
+  if (dBusy) return;
+  if (!force && dState.kind === 'ok' && Date.now() - dState.at < 30000) { drawDiscord(); return; }
+  dBusy = true;
+  if (dState.kind !== 'ok') { dState = { kind: 'loading' }; drawDiscord(); }
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const r = await fetch(DISCORD_URL, { signal: ctl.signal, cache: 'no-store' });
+    let j = null; try { j = await r.json(); } catch (e) { /* sin cuerpo */ }
+    if (r.status === 403 || (j && j.code === 50004)) dState = { kind: 'off' };
+    else if (r.ok && j && Array.isArray(j.members)) dState = { kind: 'ok', data: j, at: Date.now() };
+    else if (dState.kind !== 'ok') dState = { kind: 'error' };
+  } catch (e) {
+    if (dState.kind !== 'ok') dState = { kind: 'error' };
+  } finally { clearTimeout(to); dBusy = false; drawDiscord(); }
 }
 bDev.addEventListener('click', () => { audio(); showDevice(); });
 screenEl.addEventListener('click', e => {
+  if (e.target.closest('a,button')) { audio(); tone(660, .06, 'square', .03); }
   const b = e.target.closest('[data-act]'); if (!b) return;
-  audio(); tone(660, .06, 'square', .03);
   const a = b.dataset.act;
-  if (a === 'home') showHome();
-  else if (a === 'squad') showSquad();
-  else if (a === 'shop') showShop();
-  else if (a === 'dev-mobile' || a === 'dev-pc') {
-    setDevice(a === 'dev-mobile' ? 'mobile' : 'pc'); updDev();
-    if (location.hash === '#plantilla') showSquad(); else showHome();
-  }
+  if (a === 'dev-mobile' || a === 'dev-pc') { setDevice(a === 'dev-mobile' ? 'mobile' : 'pc'); updDev(); showHome(); }
+  else if (a === 'd-reload') loadDiscord(true);
 });
 function frame(ts) { requestAnimationFrame(frame); if (G.mode === 'home') drawHome(ts); }
 requestAnimationFrame(frame);
+setInterval(() => { if (!document.hidden && G.mode === 'home') loadDiscord(false); }, 60000);
 updDev();
-if (!deviceAsked() || location.hash === '#dispositivo') showDevice();
-else if (location.hash === '#plantilla') showSquad();
-else showHome();
+if (!deviceAsked() || location.hash === '#dispositivo') showDevice(); else showHome();
 })();
 </script>
