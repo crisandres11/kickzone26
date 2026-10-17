@@ -184,12 +184,17 @@ a.btn[hidden]{display:none!important}
 .dmsg{margin:0;border:1px dashed var(--line);padding:16px;color:var(--mute);max-width:none!important}
 .dmsg b{color:var(--chalk)}
 .dup{margin:0;font-size:13px;color:var(--mute)}
+.top{flex-wrap:wrap}
+.tools{flex-wrap:wrap;justify-content:flex-end}
+.idchip{display:inline-flex;align-items:center;min-height:40px;padding:8px 12px;border:1px solid var(--line);background:var(--panel);color:var(--amber);font:700 14px var(--display);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;font-variant-numeric:tabular-nums}
+.idchip:hover,.idchip:focus-visible{border-color:var(--amber)}
 </style>
 
 <div class="app">
   <div class="top">
     <div class="mark">KZ<b>26</b><small id="ctx">Inicio</small></div>
     <div class="tools">
+      <a class="idchip" id="bId" href="game/#perfil" title="Ver mi perfil">ID</a>
       <button id="bDev" type="button">Dispositivo: PC</button>
       <button id="bMute" type="button" aria-pressed="false">Sonido: sí</button>
     </div>
@@ -239,6 +244,43 @@ function loadCfg() {
   return d;
 }
 function saveCfg() { try { localStorage.setItem('kz26.cfg', JSON.stringify(G.cfg)); } catch (e) { /* ok */ } }
+
+/* ---------- perfil del jugador (localStorage) ---------- */
+const PKEY = 'kz26.profile';
+const STAT_KEYS = ['played', 'won', 'drawn', 'lost', 'gf', 'ga', 'leagues', 'titles'];
+function newId() {
+  let n;
+  try { const a = new Uint32Array(1); crypto.getRandomValues(a); n = 10000000 + (a[0] % 90000000); }
+  catch (e) { n = 10000000 + Math.floor(Math.random() * 90000000); }
+  return String(n);
+}
+function freshProfile() {
+  const st = {}; STAT_KEYS.forEach(k => { st[k] = 0; });
+  return { v: 1, id: newId(), created: Date.now(), stats: st };
+}
+function saveProfileObj(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) { /* sin almacenamiento */ } }
+function loadProfile() {
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(PKEY) || 'null'); } catch (e) { p = null; }
+  if (!p || typeof p !== 'object' || !/^[1-9]\d{7}$/.test(String(p.id))) { p = freshProfile(); saveProfileObj(p); return p; }
+  const st = {};
+  STAT_KEYS.forEach(k => { const v = Number(p.stats && p.stats[k]); st[k] = Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0; });
+  const cr = Number(p.created);
+  return { v: 1, id: String(p.id), created: Number.isFinite(cr) && cr > 0 ? cr : Date.now(), stats: st };
+}
+function recordMatch(gf, ga) {
+  const p = loadProfile(), s = p.stats;
+  s.played++; s.gf += gf; s.ga += ga;
+  if (gf > ga) s.won++; else if (gf < ga) s.lost++; else s.drawn++;
+  saveProfileObj(p); return p;
+}
+function recordLeague(pos) {
+  const p = loadProfile(); p.stats.leagues++; if (pos === 1) p.stats.titles++;
+  saveProfileObj(p); return p;
+}
+let PROFILE = loadProfile();
+function updId() { const el = document.getElementById('bId'); if (el) el.textContent = 'ID ' + PROFILE.id; }
+updId();
 
 function getDevice() {
   try {
