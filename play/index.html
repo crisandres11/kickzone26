@@ -170,6 +170,7 @@ p a{color:var(--amber)}
   .mark small{display:none}
   #hud{padding:8px 10px;gap:8px}
 }
+@media (max-width:480px){.pb{gap:8px}.pb button{width:64px;height:64px;font-size:13px}}
 </style>
 
 <div class="app">
@@ -202,11 +203,12 @@ p a{color:var(--amber)}
   <div id="pad" hidden>
     <div id="joy" aria-label="Palanca de movimiento"><div id="knob"></div></div>
     <div class="pb">
+      <button type="button" id="tRun">CORRER</button>
       <button type="button" id="tPass">PASE</button>
       <button type="button" id="tShoot">TIRO</button>
     </div>
   </div>
-  <p class="hint" id="padHint" hidden>Mantén TIRO para cargar más fuerza y suéltalo para patear.</p>
+  <p class="hint" id="padHint" hidden>Toca TIRO para tirar y mantenlo para un tiro potente. Mantén CORRER para correr.</p>
 
   <div id="screen"></div>
   <audio id="bgm" loop preload="auto" src="../assets/jonasblakewood-background-music-618629.mp3"></audio>
@@ -352,16 +354,17 @@ bMute.addEventListener('click', () => {
 /* ---------- entrada ---------- */
 const MOVEK = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS']);
 const PASSK = new Set(['Space', 'KeyZ', 'KeyJ']);
-const SHOOTK = new Set(['ShiftLeft', 'ShiftRight', 'KeyX', 'KeyK']);
+const SHOOTK = new Set(['KeyP', 'KeyX']);
 const held = new Set();
-const inp = { mx: 0, my: 0, passQ: false, shootHeld: false, shootRel: false };
+const inp = { mx: 0, my: 0, passQ: false, shootHeld: false, shootRel: false, run: false };
 const joy = { active: false, x: 0, y: 0 };
+let touchRun = false;
 
 addEventListener('keydown', e => {
   const m = G.match; if (!m) return;
   const c = e.code;
-  if (c === 'KeyP' || c === 'Escape') { e.preventDefault(); if (!e.repeat) togglePause(); return; }
-  if (!(MOVEK.has(c) || PASSK.has(c) || SHOOTK.has(c))) return;
+  if (c === 'Escape') { e.preventDefault(); if (!e.repeat) togglePause(); return; }
+  if (!(MOVEK.has(c) || PASSK.has(c) || SHOOTK.has(c) || c === 'KeyL')) return;
   e.preventDefault();
   if (e.repeat) return;
   held.add(c);
@@ -379,6 +382,7 @@ addEventListener('blur', () => {
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.match && !G.match.paused) togglePause(); });
 
 function readMove() {
+  inp.run = held.has('KeyL') || touchRun;
   if (joy.active) { inp.mx = joy.x; inp.my = joy.y; return; }
   inp.mx = (held.has('ArrowRight') || held.has('KeyD') ? 1 : 0) - (held.has('ArrowLeft') || held.has('KeyA') ? 1 : 0);
   inp.my = (held.has('ArrowDown') || held.has('KeyS') ? 1 : 0) - (held.has('ArrowUp') || held.has('KeyW') ? 1 : 0);
@@ -408,6 +412,11 @@ tShoot.addEventListener('pointerdown', e => { e.preventDefault(); inp.shootHeld 
 const shootUp = () => { tShoot.classList.remove('on'); if (inp.shootHeld) { inp.shootHeld = false; inp.shootRel = true; } };
 tShoot.addEventListener('pointerup', shootUp);
 tShoot.addEventListener('pointercancel', shootUp);
+const tRun = $('#tRun');
+tRun.addEventListener('pointerdown', e => { e.preventDefault(); touchRun = true; tRun.classList.add('on'); try { tRun.setPointerCapture(e.pointerId); } catch (x) { /* ok */ } });
+const runUp = () => { touchRun = false; tRun.classList.remove('on'); };
+tRun.addEventListener('pointerup', runUp);
+tRun.addEventListener('pointercancel', runUp);
 
 /* ---------- estado global ---------- */
 const DEFAULT_CFG = () => ({ name: 'KZ United', color: KITS[0][1], level: 1, names: ['Muñoz', 'Rojas', 'Fuentes', 'Araya'] });
@@ -461,7 +470,7 @@ function resetPos(m, kickTeam) {
   const k = m.players.find(q => q.team === kickTeam && q.role === 'f' && q.idx === 1);
   if (k) { k.x = kickTeam === 0 ? W / 2 - 28 : W / 2 + 28; k.y = H / 2; }
   m.ball = { x: W / 2, y: H / 2, vx: 0, vy: 0, rot: 0 };
-  m.last = null; m.passTarget = null; m.charge = 0;
+  m.last = null; m.passTarget = null; m.charge = 0; m.owner = null;
 }
 function newMatch(userTeam, oppTeam, oppStr, level) {
   const kitB = kitFor(oppTeam, userTeam.c1);
@@ -470,7 +479,7 @@ function newMatch(userTeam, oppTeam, oppStr, level) {
     lvl: Object.assign({}, LEVELS[level]), score: [0, 0], time: 0, dur: MATCH_SECS,
     phase: 'kickoff', phaseT: 2.4, kickLabel: 'Saque inicial', players: mkPlayers(),
     ball: null, last: null, passTarget: null, charge: 0, ctrl: null, ctrlT: 0,
-    chaser: [null, null], paused: false, goalBy: -1, hud: {}
+    chaser: [null, null], paused: false, goalBy: -1, hud: {}, owner: null, stam: 100, tired: false
   };
   const oppNames = ['Silva', 'Torres', 'Pérez', 'Díaz'], mine = (G.cfg.names || []);
   m.players.forEach(p => { p.name = p.team === 0 ? (mine[p.idx] || 'Jugador') : oppNames[p.idx]; });
@@ -486,7 +495,7 @@ function kick(m, p, dx, dy, pw, type) {
   const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
   const b = m.ball;
   b.vx = dx * pw + p.vx * .25; b.vy = dy * pw + p.vy * .25;
-  p.cool = .28; m.last = p; p.fx = dx; p.fy = dy;
+  p.cool = .28; m.last = p; p.fx = dx; p.fy = dy; m.owner = null;
   if (sfx[type]) sfx[type]();
 }
 function pickMate(m, p, dx, dy) {
@@ -545,7 +554,10 @@ function moveTo(p, tx, ty, spd, dt, soft) {
 
 function humanMove(m, p, dt) {
   const l = Math.hypot(inp.mx, inp.my);
-  const sp = SPEED_H * (inp.shootHeld ? .72 : 1);
+  const wantRun = inp.run && l > .1 && !inp.shootHeld && !m.tired;
+  if (wantRun) { m.stam = Math.max(0, m.stam - 38 * dt); if (m.stam <= 0) m.tired = true; }
+  else { m.stam = Math.min(100, m.stam + 20 * dt); if (m.tired && m.stam >= 25) m.tired = false; }
+  const sp = SPEED_H * (inp.shootHeld ? .72 : wantRun ? 1.55 : 1);
   let vx = 0, vy = 0;
   if (l > .1) { const k = Math.min(1, l) / l; vx = inp.mx * k * sp; vy = inp.my * k * sp; }
   accel(p, vx, vy, dt);
@@ -605,6 +617,7 @@ function aiField(m, p, dt, lvl) {
   const chaser = m.chaser[p.team] === p;
   const reach = canKick(p, b);
   if (reach && (chaser || p.team === 1 || dist(p, b) < p.r + BR + 4)) aiBall(m, p, lvl);
+  if (m.owner === p) p.dribble = true;
   if (chaser || (p.dribble && reach)) {
     if (p.dribble && reach) {
       let ty = H / 2;
@@ -671,7 +684,7 @@ function pickChaser(m) {
 }
 
 function scoreGoal(m, team) {
-  m.score[team]++; m.goalBy = team; m.phase = 'goal'; m.phaseT = 2.4;
+  m.score[team]++; m.goalBy = team; m.phase = 'goal'; m.phaseT = 2.4; m.owner = null;
   const sc = m.last;
   m.scorer = !sc ? '' : sc.team === team ? sc.num + ' ' + sc.name : sc.name + ' (en contra)';
   inp.shootHeld = false; inp.shootRel = false; inp.passQ = false; m.charge = 0;
@@ -680,11 +693,19 @@ function scoreGoal(m, team) {
 
 function ballStep(m, dt) {
   const b = m.ball;
-  b.x += b.vx * dt; b.y += b.vy * dt;
-  const f = Math.exp(-DRAG * dt); b.vx *= f; b.vy *= f;
-  const sp = Math.hypot(b.vx, b.vy);
-  if (sp < 3) { b.vx = b.vy = 0; }
-  b.rot += sp * dt / BR;
+  const ow = m.owner;
+  if (ow) {
+    const gap = ow.r + BR + 1;
+    b.x = ow.x + ow.fx * gap; b.y = ow.y + ow.fy * gap;
+    b.vx = ow.vx; b.vy = ow.vy;
+    b.rot += Math.hypot(ow.vx, ow.vy) * dt / BR;
+  } else {
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    const f = Math.exp(-DRAG * dt); b.vx *= f; b.vy *= f;
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp < 3) { b.vx = b.vy = 0; }
+    b.rot += sp * dt / BR;
+  }
   if (b.y < BR) { b.y = BR; b.vy = Math.abs(b.vy) * .7; }
   if (b.y > H - BR) { b.y = H - BR; b.vy = -Math.abs(b.vy) * .7; }
   const inMouth = Math.abs(b.y - H / 2) < GH / 2 - 2;
@@ -701,6 +722,7 @@ function ballStep(m, dt) {
     } else { b.x = W - BR; b.vx = -Math.abs(b.vx) * .7; }
   }
   for (const p of m.players) {
+    if (m.owner) break;
     const dx = b.x - p.x, dy = b.y - p.y, d = Math.hypot(dx, dy), min = p.r + BR;
     if (d < min && d > .001) {
       const nx = dx / d, ny = dy / d;
@@ -709,6 +731,19 @@ function ballStep(m, dt) {
       if (vn < 0) { b.vx -= 1.35 * vn * nx; b.vy -= 1.35 * vn * ny; }
       b.vx += p.vx * .1; b.vy += p.vy * .1;
       if (p.cool <= 0) m.last = p;
+      if (p.role === 'f' && p.cool <= 0 && !m.owner && Math.hypot(b.vx - p.vx, b.vy - p.vy) < 430) {
+        m.owner = p; m.last = p; b.vx = p.vx; b.vy = p.vy;
+      }
+    }
+  }
+  if (m.owner && playing) {
+    const o = m.owner;
+    for (const q of m.players) {
+      if (q.team === o.team || q.role !== 'f' || q.cool > 0) continue;
+      if (Math.hypot(q.x - b.x, q.y - b.y) < q.r + BR + 4) {
+        const rate = q === m.ctrl ? 1.8 : 1.4 * (q.team === 1 ? m.lvl.speed / 134 : 1);
+        if (Math.random() < rate * dt) { o.cool = .5; m.owner = q; m.last = q; b.vx = q.vx; b.vy = q.vy; break; }
+      }
     }
   }
 }
@@ -835,6 +870,10 @@ function draw(m, t) {
       ctx.fillStyle = m.charge > .9 ? '#ff6b3d' : '#ffb627'; ctx.fillRect(c.x - 15, y - 15, 30 * m.charge, 4);
     }
   }
+  ctx.fillStyle = 'rgba(6,12,20,.75)'; ctx.fillRect(0, H + 5, 120, 10);
+  ctx.fillStyle = m.tired ? '#ff6b3d' : '#6fe39a'; ctx.fillRect(1, H + 6, 118 * clamp(m.stam, 0, 100) / 100, 8);
+  ctx.font = '600 10px "Barlow Semi Condensed",system-ui,sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#f0ede3'; ctx.fillText('RESISTENCIA', 126, H + 10.5);
   if (m.phase === 'kickoff') {
     label(String(Math.max(1, Math.ceil(m.phaseT))), W / 2, H / 2 - 70, 84, '#ffb627');
     label(m.kickLabel.toUpperCase(), W / 2, H / 2 + 80, 30, '#f0ede3');
@@ -888,7 +927,7 @@ function togglePause() {
   const m = G.match; if (!m || m.phase === 'end') return;
   m.paused = !m.paused; pauseBox.hidden = !m.paused;
   bPause.textContent = m.paused ? 'Seguir' : 'Pausa';
-  if (m.paused) { held.clear(); joyEnd(); inp.shootHeld = false; inp.shootRel = false; inp.passQ = false; m.charge = 0; }
+  if (m.paused) { held.clear(); joyEnd(); runUp(); inp.shootHeld = false; inp.shootRel = false; inp.passQ = false; m.charge = 0; }
   else { acc = 0; const b = $('#bResume'); if (b) b.blur(); }
 }
 bPause.addEventListener('click', togglePause);
@@ -939,10 +978,10 @@ const badge = t => `<i class="dot" style="background:${t.c1};box-shadow:0 0 0 2p
 function controlsHtml() {
   const mob = getDevice() === 'mobile';
   const keys = mob
-    ? '<div>Palanca: mover</div><div>PASE: toca el botón</div><div>TIRO: mantén el botón para cargar y suéltalo para patear</div><div>Pausa: botón Pausa de arriba</div>'
-    : '<div><kbd>←↑↓→</kbd> o <kbd>W A S D</kbd> mover</div><div><kbd>Espacio</kbd> o <kbd>Z</kbd> pase</div><div><kbd>Shift</kbd> o <kbd>X</kbd> tiro: mantén para cargar, suelta para patear</div><div><kbd>P</kbd> pausa</div>';
+    ? '<div>Palanca: mover</div><div>PASE: toca el botón</div><div>TIRO: toca para tirar, mantén para un tiro potente</div><div>CORRER: mantén el botón</div><div>Pausa: botón Pausa de arriba</div>'
+    : '<div><kbd>←↑↓→</kbd> o <kbd>W A S D</kbd> mover</div><div><kbd>Espacio</kbd> o <kbd>Z</kbd> pase</div><div><kbd>P</kbd> tiro: mantén para un tiro potente</div><div><kbd>L</kbd> mantén para correr</div><div><kbd>Esc</kbd> pausa</div>';
   return `<details open><summary>Controles</summary><div class="keys">${keys}</div>
-      <p style="margin-top:10px">Controlas al jugador más cercano al balón. Dispositivo: ${mob ? 'celular' : 'PC'}. <a href="../home/#dispositivo">Cambiar</a></p></details>`;
+      <p style="margin-top:10px">Controlas al jugador más cercano al balón y la pelota se pega a tu jugador al tocarla. Dispositivo: ${mob ? 'celular' : 'PC'}. <a href="../home/#dispositivo">Cambiar</a></p></details>`;
 }
 function showMenu() {
   G.mode = 'menu'; const c = G.cfg;
