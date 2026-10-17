@@ -20,6 +20,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
+[hidden]{display:none!important}
 body{
   background:var(--ink);color:var(--chalk);
   font:16px/1.45 var(--body);
@@ -121,6 +122,16 @@ details[open] summary{margin-bottom:10px}
 .hint{font-size:14px;color:var(--mute);text-align:center;margin:0}
 
 a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+p a{color:var(--amber)}
+.dev{display:grid;gap:20px;justify-items:center;text-align:center;padding:clamp(28px,7vw,64px) 16px;background:var(--panel);border:1px solid var(--line)}
+.dev h1{margin:0;font:900 clamp(34px,8vw,64px)/1 var(--display);text-transform:uppercase;text-wrap:balance}
+.dev p{margin:0}
+.dev .sub{color:var(--mute);max-width:46ch}
+.opts{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.opt{width:min(240px,42vw);min-width:150px;display:grid;justify-items:center;gap:10px;padding:22px 14px;background:var(--ink);border:2px solid var(--line);color:var(--chalk);cursor:pointer;font:800 clamp(20px,4.6vw,28px) var(--display);letter-spacing:.08em;text-transform:uppercase}
+.opt:hover,.opt:focus-visible{border-color:var(--amber)}
+.opt.on{border-color:var(--amber);background:rgba(255,182,39,.12)}
+.opt svg{width:64px;height:64px;stroke:var(--amber);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* ----- inicio ----- */
 .app.is-home .mark{visibility:hidden}
 .home{position:relative;overflow:hidden;border:1px solid var(--line);background:#08101c;min-height:clamp(460px,74vh,700px);display:grid;place-items:center;isolation:isolate}
@@ -165,6 +176,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   <div class="top">
     <div class="mark">KZ<b>26</b><small id="ctx">Inicio</small></div>
     <div class="tools">
+      <button id="bDev" type="button">Dispositivo: PC</button>
       <button id="bMute" type="button" aria-pressed="false">Sonido: sí</button>
     </div>
   </div>
@@ -194,7 +206,7 @@ function kitFor(o, userColor) {
 }
 
 
-const screenEl = $('#screen'), ctxEl = $('#ctx'), bMute = $('#bMute');
+const screenEl = $('#screen'), ctxEl = $('#ctx'), bMute = $('#bMute'), bDev = $('#bDev');
 const G = { mode: 'home', cfg: null };
 const DEFAULT_CFG = () => ({ name: 'KZ United', color: KITS[0][1], level: 1, names: ['Muñoz', 'Rojas', 'Fuentes', 'Araya'] });
 function loadCfg() {
@@ -213,6 +225,16 @@ function loadCfg() {
   return d;
 }
 function saveCfg() { try { localStorage.setItem('kz26.cfg', JSON.stringify(G.cfg)); } catch (e) { /* ok */ } }
+
+function getDevice() {
+  try {
+    const v = sessionStorage.getItem('kz26.dev') || localStorage.getItem('kz26.dev');
+    if (v === 'mobile' || v === 'pc') return v;
+  } catch (e) { /* sin almacenamiento */ }
+  return (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'mobile' : 'pc';
+}
+function deviceAsked() { try { return !!sessionStorage.getItem('kz26.dev'); } catch (e) { return false; } }
+function setDevice(v) { try { sessionStorage.setItem('kz26.dev', v); localStorage.setItem('kz26.dev', v); } catch (e) { /* ok */ } }
 G.cfg = loadCfg();
 
 function scr(html, ctxText) {
@@ -333,6 +355,7 @@ function showHome() {
       <div class="hb">
         <a class="btn primary" href="../play/">Jugar</a>
         <button class="btn" type="button" data-act="squad">Plantilla</button>
+        <button class="btn" type="button" data-act="shop">Tienda</button>
       </div>
       <p class="hm" id="homeMusicHint" ${musicStarted ? 'hidden' : ''}>Toca cualquier botón para activar la música</p>
     </div>
@@ -455,15 +478,46 @@ screenEl.addEventListener('input', e => {
   if (t && t.dataset && t.dataset.pn !== undefined) { G.cfg.names[Number(t.dataset.pn)] = t.value.slice(0, 14); saveCfg(); }
 });
 
+function updDev() { bDev.textContent = 'Dispositivo: ' + (getDevice() === 'mobile' ? 'Celular' : 'PC'); }
+function showDevice() {
+  G.mode = 'device'; const cur = getDevice();
+  scr(`<section class="dev" aria-labelledby="dq">
+    <p class="kicker">Antes de empezar</p>
+    <h1 id="dq">¿Eres de celular o PC?</h1>
+    <p class="sub">Así te mostramos los controles correctos. Puedes cambiarlo cuando quieras.</p>
+    <div class="opts">
+      <button class="opt ${cur === 'mobile' ? 'on' : ''}" type="button" data-act="dev-mobile"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="19" y="6" width="26" height="52" rx="4"/><path d="M28 51h8"/></svg>Celular</button>
+      <button class="opt ${cur === 'pc' ? 'on' : ''}" type="button" data-act="dev-pc"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="10" width="52" height="34" rx="3"/><path d="M24 54h16M32 44v10"/></svg>PC</button>
+    </div>
+  </section>`, 'Dispositivo');
+}
+function showShop() {
+  G.mode = 'shop';
+  scr(`<section class="card">
+    <p class="kicker">Tienda</p>
+    <h1>Próximamente</h1>
+    <p>Estamos preparando la tienda de KZ 26. Muy pronto la veremos juntos.</p>
+    <div class="row"><button class="btn primary" type="button" data-act="home">Volver al inicio</button></div>
+  </section>`, 'Tienda');
+}
+bDev.addEventListener('click', () => { audio(); showDevice(); });
 screenEl.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   audio(); tone(660, .06, 'square', .03);
   const a = b.dataset.act;
   if (a === 'home') showHome();
   else if (a === 'squad') showSquad();
+  else if (a === 'shop') showShop();
+  else if (a === 'dev-mobile' || a === 'dev-pc') {
+    setDevice(a === 'dev-mobile' ? 'mobile' : 'pc'); updDev();
+    if (location.hash === '#plantilla') showSquad(); else showHome();
+  }
 });
 function frame(ts) { requestAnimationFrame(frame); if (G.mode === 'home') drawHome(ts); }
 requestAnimationFrame(frame);
-if (location.hash === '#plantilla') showSquad(); else showHome();
+updDev();
+if (!deviceAsked() || location.hash === '#dispositivo') showDevice();
+else if (location.hash === '#plantilla') showSquad();
+else showHome();
 })();
 </script>
