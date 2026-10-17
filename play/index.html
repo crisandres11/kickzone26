@@ -258,6 +258,7 @@ const bPause = $('#bPause'), bMute = $('#bMute'), pauseBox = $('#pauseBox'), ctx
 
 /* ---------- sonido ---------- */
 let actx = null, muted = false;
+try { muted = localStorage.getItem('kz26.muted') === '1'; } catch (e) { /* ok */ }
 function audio() {
   try {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -286,6 +287,8 @@ const sfx = {
 };
 /* música de fondo: el mp3 pedido; si no carga, una melodía sintetizada */
 const bgm = $('#bgm');
+try { const t0 = parseFloat(sessionStorage.getItem('kz26.t')); if (t0 > 0) bgm.addEventListener('loadedmetadata', () => { try { if (t0 < bgm.duration) bgm.currentTime = t0; } catch (e) { /* ok */ } }, { once: true }); } catch (e) { /* ok */ }
+addEventListener('pagehide', () => { try { sessionStorage.setItem('kz26.t', String(bgm.currentTime || 0)); } catch (e) { /* ok */ } });
 let musicStarted = false, bgmFailed = false, synth = null, musicVol = .55;
 function noteHz(n) { return 440 * Math.pow(2, (n - 69) / 12); }
 function synthNote(n, t, d, v, type) {
@@ -343,10 +346,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) { try { bgm.pause(); } catch (e) { /* ok */ } if (actx && synth) actx.suspend().catch(() => {}); }
   else if (musicStarted && !muted) { playMusic(); if (actx && actx.state === 'suspended') actx.resume().catch(() => {}); }
 });
-try { bgm.volume = musicVol; const p0 = bgm.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch (e) { /* ok */ }
+try { bgm.volume = musicVol; const p0 = muted ? null : bgm.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch (e) { /* ok */ }
 
+bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí'); bMute.setAttribute('aria-pressed', String(muted));
 bMute.addEventListener('click', () => {
-  muted = !muted; bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí');
+  muted = !muted; try { localStorage.setItem('kz26.muted', muted ? '1' : '0'); } catch (e) { /* ok */ }
+  bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí');
   bMute.setAttribute('aria-pressed', String(muted));
   if (muted) stopMusic(); else { musicStarted = true; hideMusicHint(); playMusic(); }
 });
@@ -447,7 +452,7 @@ function getDevice() {
 function deviceAsked() { try { return !!sessionStorage.getItem('kz26.dev'); } catch (e) { return false; } }
 function setDevice(v) { try { sessionStorage.setItem('kz26.dev', v); localStorage.setItem('kz26.dev', v); } catch (e) { /* ok */ } }
 const G = { mode: 'menu', match: null, league: null, cfg: loadCfg(), quickOpp: 0 };
-function goHome() { location.href = '../home/'; }
+function goHome() { location.href = '../home/game/'; }
 
 /* ---------- partido ---------- */
 function mkPlayers() {
@@ -1002,7 +1007,7 @@ function showMenu() {
     <div class="row">
       <button class="btn primary" type="button" data-act="league">Comenzar liga</button>
       <button class="btn" type="button" data-act="quick">Partido rápido</button>
-      <a class="btn" href="../home/#plantilla">Plantilla</a>
+      <a class="btn" href="../home/game/#plantilla">Plantilla</a>
       <button class="btn" type="button" data-act="home">Inicio</button>
     </div>
     ${controlsHtml()}
