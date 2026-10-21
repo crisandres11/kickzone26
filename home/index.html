@@ -145,6 +145,10 @@ p a{color:var(--amber)}
 .tk{background:linear-gradient(105deg,#f0ede3 38%,#ffffff 50%,#f0ede3 62%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4.2s 1.6s linear infinite;filter:drop-shadow(0 6px 0 rgba(0,0,0,.45))}
 .tn{color:var(--amber);text-shadow:0 0 28px rgba(255,182,39,.45),0 6px 0 rgba(0,0,0,.45);animation:glow 3s 1.6s ease-in-out infinite}
 .hs{margin:0;font:500 clamp(16px,3.6vw,22px)/1.3 var(--body);color:#c9d3e4;max-width:34ch;animation:rise .8s 1.2s both}
+.hf{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;animation:rise .8s 1.35s both}
+.hf li{display:grid;gap:2px;min-width:96px;padding:10px 14px;border:1px solid rgba(255,255,255,.16);background:rgba(8,14,28,.55);backdrop-filter:blur(6px);text-align:center}
+.hf b{font:800 22px/1 var(--head,var(--body))}
+.hf span{font:600 11px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:#9fb0cc}
 .hb{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px;animation:rise .8s 1.45s both}
 .hb .btn{font-size:clamp(20px,4.6vw,26px);padding:14px clamp(26px,7vw,52px);min-height:56px}
 .hb .btn.primary{animation:pulse 2.2s 2.4s ease-in-out infinite}
@@ -413,9 +417,9 @@ function showHome() {
         <span class="tn" aria-hidden="true"><i style="--d:2">2</i><i style="--d:3">6</i></span>
       </h1>
       <p class="hs">Pasa, define y sube a lo más alto de la tabla.</p>
+      <ul class="hf" aria-label="Resumen"><li><b>5</b><span>Equipos</span></li><li><b>2 min</b><span>Por partido</span></li><li><b>11</b><span>Jugadores</span></li></ul>
       <div class="hb">
         <a class="btn primary" href="game/">Ir al inicio</a>
-        <a class="btn" href="game/#plantilla">Plantilla</a>
         <a class="btn" href="game/#tienda">Tienda</a>
       </div>
       <p class="hm" id="homeMusicHint" ${musicStarted ? 'hidden' : ''}>Toca cualquier botón para activar la música</p>
