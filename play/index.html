@@ -48,7 +48,8 @@ button:focus-visible,input:focus-visible+span,summary:focus-visible,.seg input:f
 .tm{font:800 clamp(15px,3.6vw,22px)/1.1 var(--display);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:8px;min-width:0}
 .tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tm.r{justify-content:flex-end}
-.dot{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none;overflow:hidden;position:relative}
+.dot img,.shirt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
 .mid{display:flex;flex-direction:column;align-items:center;gap:2px}
 .score{
   font:900 clamp(34px,8vw,52px)/1 var(--display);color:var(--amber);
@@ -184,7 +185,7 @@ p a{color:var(--amber)}
 .tcard input:checked+.tc{border-color:var(--amber);background:rgba(255,182,39,.08)}
 .tcard input:focus-visible+.tc{outline:2px solid var(--amber);outline-offset:2px}
 .tc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.shirt{display:block;width:40px;height:40px;border-radius:50%;background:var(--c1);box-shadow:0 0 0 4px var(--c2);margin:4px}
+.shirt{position:relative;overflow:hidden;display:block;width:40px;height:40px;border-radius:50%;background:var(--c1);box-shadow:0 0 0 4px var(--c2);margin:4px}
 .tc-r{display:grid;justify-items:end;gap:2px}
 .tc-r b{font:900 32px/1 var(--display);font-variant-numeric:tabular-nums}
 .tc-r small{font:600 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
@@ -246,6 +247,7 @@ p a{color:var(--amber)}
   <p class="hint" id="padHint" hidden>Toca TIRO para tirar y mantenlo para un tiro potente. Mantén CORRER para correr.</p>
 
   <div id="screen"></div>
+  <audio id="crowd" loop preload="auto" src="../assets/FootballCrowd.mp3"></audio>
   <audio id="bgm" loop preload="auto" src="../assets/jonasblakewood-background-music-618629.mp3"></audio>
 </div>
 
@@ -264,11 +266,11 @@ const LEVELS = [
 /* Equipos definidos a partir de la lista de jugadores (Jugadores - Hoja 1).
    Nombres, dorsales, valoraciones y selección/equipo salen de la lista; los colores de camiseta son de diseño. */
 const TEAMS = [
-  { id: 'elpuente', name: 'El Puente', kind: 'Selección', c1: '#3a86ff', c2: '#ffffff', roster: [
+  { id: 'elpuente', flag: '../assets/ElPuente.png', name: 'El Puente', kind: 'Selección', c1: '#3a86ff', c2: '#ffffff', roster: [
     { n: 'Lucas C.', d: 32, r: 76 }, { n: 'Felipe N.', d: 1, r: 82, gk: true }, { n: 'Cristóbal R.', d: 14, r: 92 },
     { n: 'Matías H.', d: 20, r: 78 }, { n: 'Tomás D.', d: 22, r: 80 }, { n: 'Álvaro Guzmán', d: 50, r: 84 },
     { n: 'Diego C.', d: 34, r: 90 }, { n: 'Ignacio S.', d: 37, r: 91 }, { n: 'Benjamín F.', d: 40, r: 92 } ] },
-  { id: 'crispantolo', name: 'CrisPantolo', kind: 'Selección', c1: '#9b5de5', c2: '#f3e8ff', roster: [
+  { id: 'crispantolo', flag: '../assets/CrisPantolo.jpg', name: 'CrisPantolo', kind: 'Selección', c1: '#9b5de5', c2: '#f3e8ff', roster: [
     { n: 'CrisFut', d: 10, r: 93 }, { n: 'Tomás V.', d: 12, r: 86 } ] },
   { id: 'harling', name: 'Harling UF', kind: 'Club', c1: '#f4d35e', c2: '#0d3b66', roster: [
     { n: 'Lucas C.', d: 32, r: 76 }, { n: 'Felipe N.', d: 1, r: 82, gk: true }, { n: 'Matías H.', d: 20, r: 78 },
@@ -338,9 +340,26 @@ function tone(f, d, type, vol, when, f2) {
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .03);
   } catch (e) { /* sin audio */ }
 }
+/* efectos con archivo (assets/); si el archivo no carga, suena el tono sintetizado */
+function fileSfx(src, vol) {
+  const a = new Audio(src); a.preload = 'auto'; a.volume = vol;
+  const o = { a, bad: false };
+  a.addEventListener('error', () => { o.bad = true; });
+  return o;
+}
+function playFile(o, fb) {
+  if (muted) return;
+  if (!o || o.bad) { fb(); return; }
+  try {
+    const n = o.a.cloneNode(); n.volume = o.a.volume;
+    const p = n.play(); if (p && p.catch) p.catch(() => fb());
+  } catch (e) { fb(); }
+}
+const F = { kick: fileSfx('../assets/SoccerKickSound.mp3', .8), nogoal: fileSfx('../assets/NoGoal.mp3', .8) };
 const sfx = {
-  kick: () => tone(170, .09, 'triangle', .13, 0, 60),
-  pass: () => tone(230, .07, 'triangle', .08, 0, 120),
+  kick: () => playFile(F.kick, () => tone(170, .09, 'triangle', .13, 0, 60)),
+  pass: () => playFile(F.kick, () => tone(230, .07, 'triangle', .08, 0, 120)),
+  nogoal: () => playFile(F.nogoal, () => tone(300, .35, 'sawtooth', .05, 0, 110)),
   goal: () => [523, 659, 784, 1046].forEach((f, i) => tone(f, .3, 'square', .05, i * .11)),
   whistle: () => { tone(2100, .3, 'sine', .05); tone(2350, .22, 'sine', .04, .34); }
 };
@@ -408,6 +427,15 @@ document.addEventListener('visibilitychange', () => {
 try { bgm.volume = musicVol; const p0 = muted ? null : bgm.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch (e) { /* ok */ }
 
 bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí'); bMute.setAttribute('aria-pressed', String(muted));
+/* hinchada de fondo: suena solo mientras se juega un partido */
+const crowd = $('#crowd'); crowd.volume = .45;
+setInterval(() => {
+  const on = !muted && G.match && !G.match.paused && !document.hidden;
+  try {
+    if (on && crowd.paused) { const p = crowd.play(); if (p && p.catch) p.catch(() => {}); }
+    else if (!on && !crowd.paused) crowd.pause();
+  } catch (e) { /* ok */ }
+}, 300);
 bMute.addEventListener('click', () => {
   muted = !muted; try { localStorage.setItem('kz26.muted', muted ? '1' : '0'); } catch (e) { /* ok */ }
   bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí');
@@ -582,7 +610,7 @@ function newMatch(userTeam, oppTeam, level) {
   const ui = teamInfo(userTeam), oi = teamInfo(oppTeam);
   const kitB = kitFor(oppTeam, userTeam.c1);
   const m = {
-    teams: [{ name: userTeam.name, c1: userTeam.c1, c2: userTeam.c2 }, { name: oppTeam.name, c1: kitB.c1, c2: kitB.c2 }],
+    teams: [{ name: userTeam.name, c1: userTeam.c1, c2: userTeam.c2, flag: userTeam.flag }, { name: oppTeam.name, c1: kitB.c1, c2: kitB.c2, flag: oppTeam.flag }],
     lvl: Object.assign({}, LEVELS[level]), score: [0, 0], time: 0, dur: MATCH_SECS,
     phase: 'kickoff', phaseT: 2.4, kickLabel: 'Saque inicial', players: mkPlayers(),
     ball: null, last: null, passTarget: null, charge: 0, ctrl: null, ctrlT: 0,
@@ -602,6 +630,7 @@ function kick(m, p, dx, dy, pw, type) {
   const b = m.ball;
   b.vx = dx * pw + p.vx * .25; b.vy = dy * pw + p.vy * .25;
   p.cool = .28; m.last = p; p.fx = dx; p.fy = dy; m.owner = null;
+  if (type === 'pass') m.shotTeam = -1;
   if (sfx[type]) sfx[type]();
 }
 function pickMate(m, p, dx, dy) {
@@ -637,6 +666,7 @@ function doShoot(m, p, ch, spread) {
   if (cos > .82) { ax = gdx / gl; ay = gdy / gl; }
   const ang = Math.atan2(ay, ax) + rnd(-1, 1) * (spread || 0);
   kick(m, p, Math.cos(ang), Math.sin(ang), 360 + ch * 300, 'kick');
+  m.shotTeam = p.team; m.shotT = 2.6;
 }
 
 function accel(p, vx, vy, dt) {
@@ -789,7 +819,12 @@ function pickChaser(m) {
   m.chaser[1] = best; m.chaser[0] = m.ctrl;
 }
 
+/* un tiro que choca contra la línea de fondo fuera del arco = gol errado */
+function missShot(m, team) {
+  if (m.phase === 'play' && m.shotTeam === team && m.shotT > 0) { m.shotTeam = -1; sfx.nogoal(); }
+}
 function scoreGoal(m, team) {
+  m.shotTeam = -1;
   m.score[team]++; m.goalBy = team; m.phase = 'goal'; m.phaseT = 2.4; m.owner = null;
   const sc = m.last;
   m.scorer = !sc ? '' : sc.team === team ? sc.num + ' ' + sc.name : sc.name + ' (en contra)';
@@ -821,12 +856,12 @@ function ballStep(m, dt) {
     if (inMouth) {
       if (playing && b.x < -BR) { scoreGoal(m, 1); return; }
       if (!playing) { if (b.x < -GOALD) { b.x = -GOALD; b.vx = Math.abs(b.vx) * .2; } b.y = clamp(b.y, H / 2 - GH / 2 + BR, H / 2 + GH / 2 - BR); }
-    } else { b.x = BR; b.vx = Math.abs(b.vx) * .7; }
+    } else { b.x = BR; b.vx = Math.abs(b.vx) * .7; missShot(m, 1); }
   } else if (b.x > W - BR) {
     if (inMouth) {
       if (playing && b.x > W + BR) { scoreGoal(m, 0); return; }
       if (!playing) { if (b.x > W + GOALD) { b.x = W + GOALD; b.vx = -Math.abs(b.vx) * .2; } b.y = clamp(b.y, H / 2 - GH / 2 + BR, H / 2 + GH / 2 - BR); }
-    } else { b.x = W - BR; b.vx = -Math.abs(b.vx) * .7; }
+    } else { b.x = W - BR; b.vx = -Math.abs(b.vx) * .7; missShot(m, 0); }
   }
   for (const p of m.players) {
     if (m.owner) break;
@@ -856,6 +891,7 @@ function ballStep(m, dt) {
 }
 
 function step(m, dt) {
+  if (m.shotT > 0) m.shotT -= dt;
   if (m.phase === 'kickoff') {
     m.phaseT -= dt;
     if (m.phaseT <= 0) { m.phase = 'play'; sfx.whistle(); }
@@ -1005,8 +1041,8 @@ function updateHud(m) {
 function setHudTeams(m) {
   $('#hNameA').textContent = m.teams[0].name; $('#hNameB').textContent = m.teams[1].name;
   const a = $('#hDotA'), b = $('#hDotB');
-  a.style.background = m.teams[0].c1; a.style.boxShadow = '0 0 0 2px ' + m.teams[0].c2;
-  b.style.background = m.teams[1].c1; b.style.boxShadow = '0 0 0 2px ' + m.teams[1].c2;
+  a.style.background = m.teams[0].c1; a.style.boxShadow = '0 0 0 2px ' + m.teams[0].c2; a.innerHTML = flagImg(m.teams[0]);
+  b.style.background = m.teams[1].c1; b.style.boxShadow = '0 0 0 2px ' + m.teams[1].c2; b.innerHTML = flagImg(m.teams[1]);
   hudEl.style.setProperty('--ca', m.teams[0].c1); hudEl.style.setProperty('--cb', m.teams[1].c1);
 }
 
@@ -1095,7 +1131,8 @@ function scr(html, ctxText) {
   setVol(.55);
   screenEl.hidden = false; screenEl.innerHTML = html;
 }
-const badge = t => `<i class="dot" style="background:${t.c1};box-shadow:0 0 0 2px ${t.c2}"></i>`;
+const flagImg = t => t.flag ? `<img src="${t.flag}" alt="" onerror="this.remove()">` : '';
+const badge = t => `<i class="dot" style="background:${t.c1};box-shadow:0 0 0 2px ${t.c2}">${flagImg(t)}</i>`;
 
 function controlsHtml() {
   const mob = getDevice() === 'mobile';
@@ -1110,7 +1147,7 @@ function showMenu() {
   const cards = TEAMS.map(t => {
     const inf = teamInfo(t), n = t.roster.length;
     return `<label class="tcard"><input type="radio" name="team" value="${t.id}" ${t.id === G.teamId ? 'checked' : ''}>
-      <span class="tc"><span class="tc-top"><i class="shirt" style="--c1:${t.c1};--c2:${t.c2}"></i><span class="tc-r"><b>${Math.round(inf.rating)}</b><small>Valoración</small></span></span>
+      <span class="tc"><span class="tc-top"><i class="shirt" style="--c1:${t.c1};--c2:${t.c2}">${flagImg(t)}</i><span class="tc-r"><b>${Math.round(inf.rating)}</b><small>Valoración</small></span></span>
       <strong>${esc(t.name)}</strong>
       <small class="tc-k">${t.kind} · ${n} jugador${n === 1 ? '' : 'es'}</small>
       <span class="tc-p">${esc(inf.best.join(', '))}</span></span></label>`;
@@ -1129,7 +1166,6 @@ function showMenu() {
     <div class="row">
       <button class="btn primary" type="button" data-act="league">Comenzar liga</button>
       <button class="btn" type="button" data-act="quick">Partido rápido</button>
-      <a class="btn" href="../home/game/#plantilla">Plantilla</a>
       <button class="btn" type="button" data-act="home">Inicio</button>
     </div>
     ${controlsHtml()}
@@ -1183,7 +1219,7 @@ function showIntro() {
   scr(`
   <section class="card">
     <p class="kicker">Jornada ${r + 1} de 5</p>
-    <div class="vs">${badge(u)}<span>${esc(u.name)}</span><em>vs</em>${badge({ c1: ok.c1, c2: ok.c2 })}<span>${esc(o.name)}</span></div>
+    <div class="vs">${badge(u)}<span>${esc(u.name)}</span><em>vs</em>${badge({ c1: ok.c1, c2: ok.c2, flag: o.flag })}<span>${esc(o.name)}</span></div>
     <p>Valoración ${ru} contra ${ro}. Dificultad ${LEVELS[G.cfg.level].name.toLowerCase()}.</p>
     <ul class="fx">${fixtureHtml(L, r)}</ul>
     <div class="row">
