@@ -1,4 +1,6 @@
 <title>KZ 26</title>
+<link rel="icon" type="image/png" href="../assets/KZ2026_favicon.png">
+<link rel="shortcut icon" href="../assets/KZ2026_favicon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +51,10 @@ button:focus-visible,input:focus-visible+span,summary:focus-visible,.seg input:f
 .tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tm.r{justify-content:flex-end}
 .dot{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none;overflow:hidden;position:relative}
-.dot img,.shirt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.dot.fl,.shirt.fl{background:none!important;box-shadow:none!important;border-radius:0;width:auto;height:auto;overflow:visible}
+.dot.fl img,.shirt.fl img{position:static;display:block;height:16px;width:auto;max-width:34px;object-fit:contain;border-radius:2px}
+.vs .dot.fl img{height:26px;max-width:44px}
+.shirt.fl img{height:44px;max-width:64px}
 .mid{display:flex;flex-direction:column;align-items:center;gap:2px}
 .score{
   font:900 clamp(34px,8vw,52px)/1 var(--display);color:var(--amber);
@@ -112,6 +117,13 @@ details[open] summary{margin-bottom:10px}
 .tbl td:nth-child(2){font-weight:600;display:flex;gap:10px;align-items:center}
 .tbl td:last-child{font:900 20px var(--display);color:var(--amber)}
 .tbl tr.me{background:rgba(255,182,39,.12)}
+.ck{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:10px;margin:0}
+.ck div{border:1px solid var(--line);background:var(--panel-2);padding:10px 12px}
+.ck dt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8fa0ba}
+.ck dd{margin:4px 0 0;font:800 24px/1 var(--display)}
+.ofl{display:grid;gap:10px}
+.ofl .btn{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.ofl small{color:#8fa0ba}
 .banner{font:900 clamp(26px,6vw,40px)/1.1 var(--display);text-transform:uppercase;color:var(--amber)}
 
 #pad{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 4px;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -318,6 +330,10 @@ const stageEl = $('#stage'), hudEl = $('#hud'), screenEl = $('#screen'), padEl =
 const bPause = $('#bPause'), bMute = $('#bMute'), pauseBox = $('#pauseBox'), ctxEl = $('#ctx');
 
 /* ---------- sonido ---------- */
+/* volumen guardado (kz26.vol): m = música, s = efectos (0 a 1) */
+const VOL = { m: .55, s: .8 };
+try { const v = JSON.parse(localStorage.getItem('kz26.vol') || 'null'); if (v) { const f = (x, d) => (typeof x === 'number' && x >= 0 && x <= 1) ? x : d; VOL.m = f(v.m, .55); VOL.s = f(v.s, .8); } } catch (e) { /* ok */ }
+function saveVol() { try { localStorage.setItem('kz26.vol', JSON.stringify(VOL)); } catch (e) { /* ok */ } }
 let actx = null, muted = false;
 try { muted = localStorage.getItem('kz26.muted') === '1'; } catch (e) { /* ok */ }
 function audio() {
@@ -328,14 +344,14 @@ function audio() {
   return actx;
 }
 function tone(f, d, type, vol, when, f2) {
-  if (muted) return;
+  if (muted || VOL.s < .01) return;
   const a = actx; if (!a) return;
   try {
     const t = a.currentTime + (when || 0), o = a.createOscillator(), g = a.createGain();
     o.type = type || 'sine';
     o.frequency.setValueAtTime(f, t);
     if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
-    g.gain.setValueAtTime(vol || .06, t);
+    g.gain.setValueAtTime((vol || .06) * VOL.s / .8, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .03);
   } catch (e) { /* sin audio */ }
@@ -348,10 +364,10 @@ function fileSfx(src, vol) {
   return o;
 }
 function playFile(o, fb) {
-  if (muted) return;
+  if (muted || VOL.s < .01) return;
   if (!o || o.bad) { fb(); return; }
   try {
-    const n = o.a.cloneNode(); n.volume = o.a.volume;
+    const n = o.a.cloneNode(); n.volume = Math.min(1, VOL.s);
     const p = n.play(); if (p && p.catch) p.catch(() => fb());
   } catch (e) { fb(); }
 }
@@ -367,7 +383,7 @@ const sfx = {
 const bgm = $('#bgm');
 try { const t0 = parseFloat(sessionStorage.getItem('kz26.t')); if (t0 > 0) bgm.addEventListener('loadedmetadata', () => { try { if (t0 < bgm.duration) bgm.currentTime = t0; } catch (e) { /* ok */ } }, { once: true }); } catch (e) { /* ok */ }
 addEventListener('pagehide', () => { try { sessionStorage.setItem('kz26.t', String(bgm.currentTime || 0)); } catch (e) { /* ok */ } });
-let musicStarted = false, bgmFailed = false, synth = null, musicVol = .55;
+let musicStarted = false, bgmFailed = false, synth = null, musicVol = VOL.m;
 function noteHz(n) { return 440 * Math.pow(2, (n - 69) / 12); }
 function synthNote(n, t, d, v, type) {
   const a = actx; if (!a || !synth) return;
@@ -403,7 +419,7 @@ function synthStop() {
   synth = null;
 }
 function playMusic() {
-  if (muted) return;
+  if (muted || G.match) return;
   audio();
   if (!bgmFailed) { try { const p = bgm.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ok */ } }
   else synthStart();
@@ -415,7 +431,7 @@ function setVol(v) {
   if (synth) synth.master.gain.value = v * .5;
 }
 function hideMusicHint() { const h = document.getElementById('homeMusicHint'); if (h) h.hidden = true; }
-bgm.addEventListener('error', () => { bgmFailed = true; if (musicStarted && !muted) synthStart(); });
+bgm.addEventListener('error', () => { bgmFailed = true; if (musicStarted && !muted && !G.match) synthStart(); });
 bgm.addEventListener('playing', () => { musicStarted = true; hideMusicHint(); });
 function firstGesture() { if (musicStarted) return; musicStarted = true; hideMusicHint(); playMusic(); }
 document.addEventListener('pointerdown', firstGesture, true);
@@ -430,7 +446,8 @@ bMute.textContent = 'Sonido: ' + (muted ? 'no' : 'sí'); bMute.setAttribute('ari
 /* hinchada de fondo: suena solo mientras se juega un partido */
 const crowd = $('#crowd'); crowd.volume = .45;
 setInterval(() => {
-  const on = !muted && G.match && !G.match.paused && !document.hidden;
+  const on = !muted && VOL.s >= .01 && G.match && !G.match.paused && !document.hidden;
+  crowd.volume = Math.min(1, .45 * VOL.s / .8);
   try {
     if (on && crowd.paused) { const p = crowd.play(); if (p && p.catch) p.catch(() => {}); }
     else if (!on && !crowd.paused) crowd.pause();
@@ -579,7 +596,7 @@ function loadTeamId() {
   try { const v = localStorage.getItem('kz26.team'); if (TEAMS.some(t => t.id === v)) return v; } catch (e) { /* ok */ }
   return TEAMS[0].id;
 }
-const G = { mode: 'menu', match: null, league: null, cfg: loadCfg(), teamId: loadTeamId(), quickRival: null };
+const G = { mode: 'menu', career: false, match: null, league: null, cfg: loadCfg(), teamId: loadTeamId(), quickRival: null };
 function saveTeam() { try { localStorage.setItem('kz26.team', G.teamId); } catch (e) { /* ok */ } }
 function goHome() { location.href = '../home/game/'; }
 
@@ -629,6 +646,7 @@ function kick(m, p, dx, dy, pw, type) {
   const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
   const b = m.ball;
   b.vx = dx * pw + p.vx * .25; b.vy = dy * pw + p.vy * .25;
+  m.humanKick = p === m.ctrl && p.team === 0;
   p.cool = .28; m.last = p; p.fx = dx; p.fy = dy; m.owner = null;
   if (type === 'pass') m.shotTeam = -1;
   if (sfx[type]) sfx[type]();
@@ -693,7 +711,7 @@ function humanMove(m, p, dt) {
   const wantRun = inp.run && l > .1 && !inp.shootHeld && !m.tired;
   if (wantRun) { m.stam = Math.max(0, m.stam - 38 * dt); if (m.stam <= 0) m.tired = true; }
   else { m.stam = Math.min(100, m.stam + 20 * dt); if (m.tired && m.stam >= 25) m.tired = false; }
-  const sp = SPEED_H * (inp.shootHeld ? .72 : wantRun ? 1.55 : 1);
+  const sp = SPEED_H * (1 + (m.boost || 0)) * (inp.shootHeld ? .72 : wantRun ? 1.55 : 1);
   let vx = 0, vy = 0;
   if (l > .1) { const k = Math.min(1, l) / l; vx = inp.mx * k * sp; vy = inp.my * k * sp; }
   accel(p, vx, vy, dt);
@@ -827,6 +845,7 @@ function scoreGoal(m, team) {
   m.shotTeam = -1;
   m.score[team]++; m.goalBy = team; m.phase = 'goal'; m.phaseT = 2.4; m.owner = null;
   const sc = m.last;
+  if (team === 0 && sc && sc.team === 0 && m.humanKick) m.myGoals = (m.myGoals || 0) + 1;
   m.scorer = !sc ? '' : sc.team === team ? sc.num + ' ' + sc.name : sc.name + ' (en contra)';
   m.goals.push({ team, min: clamp(Math.ceil(m.time / m.dur * 90), 1, 90), who: m.scorer || 'Gol' });
   inp.shootHeld = false; inp.shootRel = false; inp.passQ = false; m.charge = 0;
@@ -1041,8 +1060,8 @@ function updateHud(m) {
 function setHudTeams(m) {
   $('#hNameA').textContent = m.teams[0].name; $('#hNameB').textContent = m.teams[1].name;
   const a = $('#hDotA'), b = $('#hDotB');
-  a.style.background = m.teams[0].c1; a.style.boxShadow = '0 0 0 2px ' + m.teams[0].c2; a.innerHTML = flagImg(m.teams[0]);
-  b.style.background = m.teams[1].c1; b.style.boxShadow = '0 0 0 2px ' + m.teams[1].c2; b.innerHTML = flagImg(m.teams[1]);
+  a.style.background = m.teams[0].c1; a.style.boxShadow = '0 0 0 2px ' + m.teams[0].c2; a.innerHTML = flagImg(m.teams[0]); a.classList.toggle('fl', !!m.teams[0].flag);
+  b.style.background = m.teams[1].c1; b.style.boxShadow = '0 0 0 2px ' + m.teams[1].c2; b.innerHTML = flagImg(m.teams[1]); b.classList.toggle('fl', !!m.teams[1].flag);
   hudEl.style.setProperty('--ca', m.teams[0].c1); hudEl.style.setProperty('--cb', m.teams[1].c1);
 }
 
@@ -1128,11 +1147,11 @@ function scr(html, ctxText) {
   document.getElementById('keyHint').hidden = true;
   ctxEl.textContent = ctxText || 'Fútbol arcade';
   document.querySelector('.app').classList.remove('is-home');
-  setVol(.55);
+  setVol(VOL.m);
   screenEl.hidden = false; screenEl.innerHTML = html;
 }
 const flagImg = t => t.flag ? `<img src="${t.flag}" alt="" onerror="this.remove()">` : '';
-const badge = t => `<i class="dot" style="background:${t.c1};box-shadow:0 0 0 2px ${t.c2}">${flagImg(t)}</i>`;
+const badge = t => `<i class="dot" style="background:${t.c1};box-shadow:0 0 0 2px ${t.c2}">${flagImg(t)}</i>`.replace('class="dot"', t.flag ? 'class="dot fl"' : 'class="dot"');
 
 function controlsHtml() {
   const mob = getDevice() === 'mobile';
@@ -1143,11 +1162,11 @@ function controlsHtml() {
       <p style="margin-top:10px">Controlas al jugador más cercano al balón y la pelota se pega a tu jugador al tocarla. Dispositivo: ${mob ? 'celular' : 'PC'}. <a href="../home/#dispositivo">Cambiar</a></p></details>`;
 }
 function showMenu() {
-  G.mode = 'menu'; const c = G.cfg;
+  G.mode = 'menu'; G.career = false; const c = G.cfg;
   const cards = TEAMS.map(t => {
     const inf = teamInfo(t), n = t.roster.length;
     return `<label class="tcard"><input type="radio" name="team" value="${t.id}" ${t.id === G.teamId ? 'checked' : ''}>
-      <span class="tc"><span class="tc-top"><i class="shirt" style="--c1:${t.c1};--c2:${t.c2}">${flagImg(t)}</i><span class="tc-r"><b>${Math.round(inf.rating)}</b><small>Valoración</small></span></span>
+      <span class="tc"><span class="tc-top"><i class="shirt${t.flag ? ' fl' : ''}" style="--c1:${t.c1};--c2:${t.c2}">${flagImg(t)}</i><span class="tc-r"><b>${Math.round(inf.rating)}</b><small>Valoración</small></span></span>
       <strong>${esc(t.name)}</strong>
       <small class="tc-k">${t.kind} · ${n} jugador${n === 1 ? '' : 'es'}</small>
       <span class="tc-p">${esc(inf.best.join(', '))}</span></span></label>`;
@@ -1166,6 +1185,8 @@ function showMenu() {
     <div class="row">
       <button class="btn primary" type="button" data-act="league">Comenzar liga</button>
       <button class="btn" type="button" data-act="quick">Partido rápido</button>
+      <a class="btn" href="carrerajugador/">Carrera jugador</a>
+      <a class="btn" href="../home/game/#ajustes">Ajustes</a>
       <button class="btn" type="button" data-act="home">Inicio</button>
     </div>
     ${controlsHtml()}
@@ -1309,12 +1330,12 @@ function startMatch(oppTeam) {
   padEl.hidden = !touch; padHint.hidden = !touch;
   document.getElementById('keyHint').hidden = touch;
   ctxEl.textContent = G.mode === 'league' ? 'Liga · Jornada ' + (G.league.round + 1) + '/5' : 'Partido rápido';
-  setVol(.2); setHudTeams(m); fit(); acc = 0; lastTs = performance.now();
+  stopMusic(); setHudTeams(m); fit(); acc = 0; lastTs = performance.now();
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   updateHud(m); draw(m, 0);
 }
 function finishMatch(m) {
-  G.match = null; held.clear(); joyEnd();
+  G.match = null; held.clear(); joyEnd(); playMusic();
   PROFILE = recordMatch(m.score[0], m.score[1]); updId();
   if (G.mode === 'league') {
     const L = G.league, r = L.round, oi = oppOf(L, r);
@@ -1325,6 +1346,7 @@ function finishMatch(m) {
     showFull(m, false);
   } else showFull(m, true);
 }
+
 
 showMenu();
 })();
