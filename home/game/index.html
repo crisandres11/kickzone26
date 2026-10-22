@@ -1,4 +1,6 @@
 <title>KZ 26</title>
+<link rel="icon" type="image/png" href="../../assets/KZ2026_favicon.png">
+<link rel="shortcut icon" href="../../assets/KZ2026_favicon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -213,6 +215,10 @@ select{font:600 16px var(--body);background:var(--ink);color:var(--chalk);border
 .stats div{display:grid;gap:6px;background:var(--ink);border:1px solid var(--line);padding:12px}
 .stats dt{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 .stats dd{margin:0;font:900 34px/1 var(--display);font-variant-numeric:tabular-nums}
+.setg{display:grid;gap:10px}
+.setg label{display:flex;justify-content:space-between;gap:10px}
+.setg output{color:var(--mute);font-variant-numeric:tabular-nums}
+.setg input[type=range]{width:100%;accent-color:#ffb627;height:28px}
 .btn.danger{border-color:#6b2a2a;color:#ff9b9b}
 .top{flex-wrap:wrap}
 .tools{flex-wrap:wrap;justify-content:flex-end}
@@ -326,10 +332,14 @@ G.cfg = loadCfg();
 function scr(html, ctxText) {
   ctxEl.textContent = ctxText || 'Inicio';
   document.querySelector('.app').classList.remove('is-home');
-  setVol(.55);
+  setVol(VOL.m);
   screenEl.innerHTML = html;
 }
 /* ---------- sonido ---------- */
+/* volumen guardado (kz26.vol): m = música, s = efectos (0 a 1) */
+const VOL = { m: .55, s: .8 };
+try { const v = JSON.parse(localStorage.getItem('kz26.vol') || 'null'); if (v) { const f = (x, d) => (typeof x === 'number' && x >= 0 && x <= 1) ? x : d; VOL.m = f(v.m, .55); VOL.s = f(v.s, .8); } } catch (e) { /* ok */ }
+function saveVol() { try { localStorage.setItem('kz26.vol', JSON.stringify(VOL)); } catch (e) { /* ok */ } }
 let actx = null, muted = false;
 try { muted = localStorage.getItem('kz26.muted') === '1'; } catch (e) { /* ok */ }
 function audio() {
@@ -340,14 +350,14 @@ function audio() {
   return actx;
 }
 function tone(f, d, type, vol, when, f2) {
-  if (muted) return;
+  if (muted || VOL.s < .01) return;
   const a = actx; if (!a) return;
   try {
     const t = a.currentTime + (when || 0), o = a.createOscillator(), g = a.createGain();
     o.type = type || 'sine';
     o.frequency.setValueAtTime(f, t);
     if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
-    g.gain.setValueAtTime(vol || .06, t);
+    g.gain.setValueAtTime((vol || .06) * VOL.s / .8, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .03);
   } catch (e) { /* sin audio */ }
@@ -362,7 +372,7 @@ const sfx = {
 const bgm = $('#bgm');
 try { const t0 = parseFloat(sessionStorage.getItem('kz26.t')); if (t0 > 0) bgm.addEventListener('loadedmetadata', () => { try { if (t0 < bgm.duration) bgm.currentTime = t0; } catch (e) { /* ok */ } }, { once: true }); } catch (e) { /* ok */ }
 addEventListener('pagehide', () => { try { sessionStorage.setItem('kz26.t', String(bgm.currentTime || 0)); } catch (e) { /* ok */ } });
-let musicStarted = false, bgmFailed = false, synth = null, musicVol = .55;
+let musicStarted = false, bgmFailed = false, synth = null, musicVol = VOL.m;
 function noteHz(n) { return 440 * Math.pow(2, (n - 69) / 12); }
 function synthNote(n, t, d, v, type) {
   const a = actx; if (!a || !synth) return;
@@ -445,11 +455,13 @@ function showHub() {
       <nav aria-label="Menú principal">
         <ul class="menu">
           <li style="--i:0"><a class="mbtn primary" href="../../play/"><span>Jugar</span><span class="arr" aria-hidden="true">→</span></a></li>
-          <li style="--i:1"><a class="mbtn" href="#plantilla"><span>Plantilla</span><small>En pausa</small></a></li>
-          <li style="--i:2"><a class="mbtn" href="#tienda"><span>Tienda</span><span class="arr" aria-hidden="true">→</span></a></li>
-          <li style="--i:3"><a class="mbtn" href="#codigos"><span>Reclamar códigos</span><small>Pendiente</small></a></li>
-          <li style="--i:4"><a class="mbtn" href="#actualizaciones"><span>Actualizaciones</span><small>Pendiente</small></a></li>
-          <li style="--i:5"><a class="mbtn" href="#creditos"><span>Créditos</span><span class="arr" aria-hidden="true">→</span></a></li>
+          <li style="--i:1"><a class="mbtn" href="../../play/carrerajugador/"><span>Carrera jugador</span><span class="arr" aria-hidden="true">→</span></a></li>
+          <li style="--i:2"><a class="mbtn" href="#plantilla"><span>Plantilla</span><small>En pausa</small></a></li>
+          <li style="--i:3"><a class="mbtn" href="#tienda"><span>Tienda</span><span class="arr" aria-hidden="true">→</span></a></li>
+          <li style="--i:4"><a class="mbtn" href="#codigos"><span>Reclamar códigos</span><small>Pendiente</small></a></li>
+          <li style="--i:5"><a class="mbtn" href="#actualizaciones"><span>Actualizaciones</span><small>Pendiente</small></a></li>
+          <li style="--i:6"><a class="mbtn" href="#creditos"><span>Créditos</span><span class="arr" aria-hidden="true">→</span></a></li>
+          <li style="--i:7"><a class="mbtn" href="#ajustes"><span>Ajustes</span><span class="arr" aria-hidden="true">→</span></a></li>
         </ul>
       </nav>
       <p class="hm" id="homeMusicHint" ${musicStarted ? 'hidden' : ''}>Toca cualquier botón para activar la música</p>
@@ -689,6 +701,27 @@ function showProfile() {
     <p>Tu ID y tu progreso se guardan solo en este navegador. Si borras los datos del sitio o juegas desde otro navegador o dispositivo, se crea un ID nuevo.</p>
   </section>`, 'Perfil');
 }
+function showSettings() {
+  G.mode = 'settings';
+  const pc = v => Math.round(v * 100);
+  scr(`<section class="card">
+    <p class="kicker">Ajustes</p>
+    <h1>Ajustes</h1>
+    <div class="setg">
+      <label for="vM"><span>Volumen de la música</span><output id="oM">${pc(VOL.m)}%</output></label>
+      <input id="vM" type="range" min="0" max="100" step="1" value="${pc(VOL.m)}">
+      <label for="vS"><span>Volumen de los efectos</span><output id="oS">${pc(VOL.s)}%</output></label>
+      <input id="vS" type="range" min="0" max="100" step="1" value="${pc(VOL.s)}">
+    </div>
+    <p>Los efectos incluyen patadas, pases, gol y la hinchada del partido.</p>
+    <p class="lbl" id="smsg" aria-live="polite"></p>
+    <div class="row">
+      <a class="btn primary" href="#menu">Volver al menú</a>
+      <button class="btn danger" type="button" data-act="wipeall">Borrar todos los datos</button>
+    </div>
+    <p>Borrar todos los datos elimina tu perfil, ID, equipo, carrera y ajustes de este navegador. No se puede deshacer.</p>
+  </section>`, 'Ajustes');
+}
 function profileMsg(t) { const el = document.getElementById('pmsg'); if (el) el.textContent = t; }
 function route(first) {
   const r = location.hash.replace(/^#/, '');
@@ -698,6 +731,7 @@ function route(first) {
   else if (r === 'actualizaciones') showPending('Actualizaciones');
   else if (r === 'creditos') showCredits();
   else if (r === 'perfil') showProfile();
+  else if (r === 'ajustes') showSettings();
   else showHub();
   if (!first) {
     try { window.scrollTo(0, 0); } catch (e) { /* ok */ }
@@ -712,6 +746,18 @@ screenEl.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
   if (a === 'copy-id') copyText(PROFILE.id).then(ok => profileMsg(ok ? 'ID copiado' : 'No se pudo copiar. Selecciónalo y cópialo a mano.'));
+  else if (a === 'wipeall') {
+    if (b.dataset.armed === '1') {
+      try {
+        [localStorage, sessionStorage].forEach(st => { Object.keys(st).filter(k => k.indexOf('kz26.') === 0).forEach(k => st.removeItem(k)); });
+      } catch (x) { /* ok */ }
+      b.disabled = true; const el = document.getElementById('smsg'); if (el) el.textContent = 'Datos borrados. Volviendo al inicio…';
+      setTimeout(() => { location.href = '../'; }, 900);
+    } else {
+      b.dataset.armed = '1'; b.textContent = '¿Seguro? Pulsa otra vez';
+      setTimeout(() => { if (b.isConnected && !b.disabled) { b.dataset.armed = ''; b.textContent = 'Borrar todos los datos'; } }, 4000);
+    }
+  }
   else if (a === 'wipe') {
     if (b.dataset.armed === '1') {
       try { localStorage.removeItem(PKEY); localStorage.removeItem('kz26.cfg'); } catch (x) { /* ok */ }
@@ -723,8 +769,16 @@ screenEl.addEventListener('click', e => {
     }
   }
 });
+screenEl.addEventListener('input', e => {
+  const t = e.target; if (!t || (t.id !== 'vM' && t.id !== 'vS')) return;
+  const v = Math.max(0, Math.min(100, Number(t.value) || 0)) / 100;
+  if (t.id === 'vM') { VOL.m = v; setVol(v); document.getElementById('oM').textContent = Math.round(v * 100) + '%'; }
+  else { VOL.s = v; document.getElementById('oS').textContent = Math.round(v * 100) + '%'; }
+  saveVol();
+});
 screenEl.addEventListener('change', e => {
   const t = e.target;
+  if (t && t.id === 'vS') { audio(); tone(330, .12, 'triangle', .12, 0, 110); }
   if (t && t.name === 'nat') { shopState.nation = t.value; drawShop(); }
   else if (t && t.id === 'shopSort') { shopState.sort = t.value; drawShop(); }
 });
