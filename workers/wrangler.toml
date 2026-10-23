@@ -1,0 +1,15 @@
+name = "kz26-api"
+main = "kz26-api.js"
+compatibility_date = "2024-11-01"
+
+# 1) Crea el KV:   npx wrangler kv namespace create KZ
+# 2) Pega aquí el id que te devuelve:
+[[kv_namespaces]]
+binding = "KZ"
+id = "PEGA_AQUI_EL_ID_DEL_KV"
+
+[vars]
+# Pon el origen de tu página para que solo ella pueda usar la API. Ej: "https://tuusuario.github.io"
+ALLOWED_ORIGIN = "*"
+# "1" para que cada acción de admin se avise también en Discord
+DISCORD_AUDIT = "0"
