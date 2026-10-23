@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>KZ 26 · Admin</title>
+<link rel="icon" type="image/png" href="../assets/KZ2026_favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Big+Shoulders+Display:wght@700;800;900&display=swap">
+<style>
+:root{color-scheme:dark;--ink:#070c16;--panel:#111b2e;--panel2:#18253d;--line:#27395a;--chalk:#f0ede3;--mute:#8fa0ba;--amber:#ffb627;--red:#ff6b6b;--green:#6fe39a;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;--body:'Barlow Semi Condensed','Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--ink);color:var(--chalk);font:17px/1.45 var(--body);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse 60% 50% at 10% 0%,rgba(58,134,255,.2),transparent 70%),radial-gradient(ellipse 55% 45% at 95% 5%,rgba(255,182,39,.16),transparent 70%),var(--ink)}
+body::after{content:"";position:fixed;inset:-40% -20%;z-index:-1;opacity:.5;background:repeating-linear-gradient(100deg,rgba(255,255,255,.03) 0 90px,transparent 90px 180px);transform:rotate(-8deg);animation:pan 40s linear infinite}
+@keyframes pan{to{transform:rotate(-8deg) translateX(-180px)}}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+[hidden]{display:none!important}
+button{font:800 15px var(--display);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--chalk);min-height:44px;padding:0 18px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .2s,border-color .2s}
+button:hover:not(:disabled){transform:translateY(-2px);border-color:var(--amber);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.p{background:linear-gradient(180deg,#ffcf5c,#ff9f1c);color:#1a1200;border-color:#ffcf5c}
+button.d{border-color:#6b2a2a;color:var(--red)}button.d:hover:not(:disabled){border-color:var(--red)}
+button.g{border-color:#2d6b47;color:var(--green)}
+input,textarea,select{width:100%;font:600 17px var(--body);padding:12px 14px;background:#0a1220;color:var(--chalk);border:1px solid var(--line);border-radius:2px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,182,39,.18)}
+label{display:grid;gap:6px;font:700 12px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+h1,h2,h3{margin:0;font-family:var(--display);text-transform:uppercase}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
+
+/* bloqueo */
+.lock{min-height:100vh;display:grid;place-items:center;padding:20px}
+.lbox{width:min(420px,100%);display:grid;gap:16px;padding:32px;background:linear-gradient(165deg,rgba(24,37,60,.95),rgba(9,15,26,.96));border:1px solid rgba(255,182,39,.25);box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 70px rgba(255,182,39,.08);animation:in .6s both;text-align:center}
+.logo{font:900 64px/1 var(--display);letter-spacing:.03em}.logo b{color:var(--amber)}
+.tag{font:700 12px var(--body);letter-spacing:.3em;text-transform:uppercase;color:var(--amber)}
+.keyin{text-align:center;font:800 30px var(--display);letter-spacing:.5em;padding:14px}
+.msg{min-height:22px;margin:0;font-size:15px;color:var(--red)}.msg.ok{color:var(--green)}
+
+/* panel */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid rgba(255,182,39,.2);margin-bottom:16px}
+.bar .logo{font-size:40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{background:var(--panel);border-radius:999px;min-height:40px}.tab[aria-selected=true]{background:linear-gradient(180deg,#ffcf5c,#ff9f1c);color:#1a1200;border-color:#ffcf5c}
+.card{background:linear-gradient(165deg,rgba(24,37,60,.9),rgba(11,18,31,.92));border:1px solid var(--line);padding:22px;display:grid;gap:16px;animation:in .45s both}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{padding:16px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--amber)}
+.stat b{display:block;font:900 44px/1 var(--display);color:var(--amber);font-variant-numeric:tabular-nums}.stat span{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.row>*{flex:1 1 180px}.row>button{flex:0 0 auto}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.badge{display:inline-block;padding:4px 10px;font:800 12px var(--display);letter-spacing:.14em;text-transform:uppercase;border:1px solid}
+.b-ban{color:var(--red);border-color:#6b2a2a;background:#2a1216}.b-ok{color:var(--green);border-color:#2d6b47;background:#0f2619}.b-kick{color:var(--amber);border-color:#7a5a12;background:#2b210b}
+.list{display:grid;gap:8px}.item{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 14px;background:var(--panel);border:1px solid var(--line)}
+.item small{color:var(--mute)}.mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chips button{min-height:38px;padding:0 14px}
+.toast{position:fixed;right:16px;bottom:16px;z-index:50;max-width:min(380px,calc(100vw - 32px));padding:14px 18px;background:#13271c;border:1px solid #3fbf74;border-left:5px solid var(--green);animation:in .3s both}
+.toast.err{background:#2a1216;border-color:#8a2f3a;border-left-color:var(--red)}
+.note{color:var(--mute);font-size:15px;margin:0}
+.warn{padding:14px 16px;border:1px solid #7a5a12;background:#2b210b;color:#ffe2a0}
+@media (prefers-reduced-motion:reduce){body::after,.card,.lbox{animation:none}}
+</style></head>
+<body>
+<section class="lock" id="lock">
+  <form class="lbox" id="lform" autocomplete="off">
+    <div class="tag">Acceso restringido</div>
+    <div class="logo">KZ<b>26</b></div>
+    <h2>Panel de administración</h2>
+    <label>Clave de acceso<input id="key" class="keyin" type="password" inputmode="numeric" autocomplete="off" maxlength="64" required aria-label="Clave de acceso"></label>
+    <button class="p" type="submit" id="enter">Entrar</button>
+    <p class="msg" id="lmsg" role="alert"></p>
+    <p class="note" id="cfgwarn" hidden>Falta la dirección del servidor. Pega la URL de tu Worker en <b>assets/kz26-config.js</b>.</p>
+  </form>
+</section>
+
+<main class="wrap" id="app" hidden>
+  <div class="bar">
+    <div class="logo">KZ<b>26</b> <span class="tag">Admin</span></div>
+    <button type="button" id="out">Cerrar sesión</button>
+  </div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+  <section id="t-resumen" class="card">
+    <h2>Resumen</h2>
+    <div class="stats">
+      <div class="stat"><b id="sRec">–</b><span>Cuentas con registro</span></div>
+      <div class="stat"><b id="sBan">–</b><span>Baneados</span></div>
+      <div class="stat"><b id="sGift">–</b><span>Regalos pendientes</span></div>
+      <div class="stat"><b id="sDis">–</b><span>Discord</span></div>
+    </div>
+    <h3>Actividad reciente</h3>
+    <div class="list" id="log"></div>
+  </section>
+
+  <section id="t-jugadores" class="card" hidden>
+    <h2>Jugadores</h2>
+    <div class="row"><label>ID del jugador<input id="pid" inputmode="numeric" maxlength="8" placeholder="12948543"></label><button class="p" type="button" id="look">Buscar</button></div>
+    <div id="pbox" class="list"></div>
+  </section>
+
+  <section id="t-acciones" class="card" hidden>
+    <h2>Acciones sobre un ID</h2>
+    <div class="grid2">
+      <label>ID del jugador<input id="aid" inputmode="numeric" maxlength="8" placeholder="12948543"></label>
+      <label>Motivo (baneo)<input id="areason" maxlength="200" placeholder="Ej. Spam en el chat"></label>
+    </div>
+    <div class="row"><button class="d" type="button" data-do="ban">Banear</button><button class="g" type="button" data-do="unban">Desbanear</button><button type="button" data-do="kick">Expulsar de la sesión</button></div>
+    <p class="note">Expulsar saca al jugador de su sesión actual y puede volver a entrar. Banear le bloquea el juego hasta que lo desbanees.</p>
+  </section>
+
+  <section id="t-regalos" class="card" hidden>
+    <h2>Regalar</h2>
+    <div class="grid2">
+      <label>ID del jugador<input id="gid" inputmode="numeric" maxlength="8" placeholder="12948543"></label>
+      <label>Kicks<input id="gk" inputmode="numeric" maxlength="7" placeholder="500"></label>
+      <label>Objeto (opcional)<input id="gi" maxlength="80" placeholder="Ej. Camiseta dorada"></label>
+      <label>Mensaje (opcional)<input id="gn" maxlength="160" placeholder="Ej. ¡Gracias por jugar!"></label>
+    </div>
+    <div class="chips" id="presets"></div>
+    <div class="row"><button class="p" type="button" id="gsend">Enviar regalo</button></div>
+    <p class="note">El jugador lo recibe la próxima vez que tenga el juego abierto (se revisa cada 45 segundos).</p>
+  </section>
+
+  <section id="t-baneos" class="card" hidden>
+    <h2>Baneados</h2>
+    <div class="row"><button type="button" id="rb">Actualizar lista</button></div>
+    <div class="list" id="bans"></div>
+  </section>
+
+  <section id="t-discord" class="card" hidden>
+    <h2>Discord</h2>
+    <div class="warn" id="dwarn" hidden>Discord no está configurado en el servidor. Agrega el secreto DISCORD_WEBHOOK (mira worker/README.md).</div>
+    <div class="grid2"><label>Nombre que se muestra<input id="dname" maxlength="80" value="KZ 26 Admin"></label></div>
+    <label>Mensaje<textarea id="dmsg" rows="5" maxlength="1800" placeholder="Escribe el anuncio…"></textarea></label>
+    <div class="chips" id="dtpl"></div>
+    <div class="row"><button class="p" type="button" id="dsend">Enviar a Discord</button></div>
+    <p class="note">Los mensajes no mencionan a @everyone ni a roles.</p>
+  </section>
+</main>
+
+<script src="../assets/kz26-config.js"></script>
+<script>
+(() => {
+'use strict';
+const API = String(window.KZ_API_URL || '').replace(/\/+$/, '');
+const $ = s => document.querySelector(s);
+let KEY = '';                       /* solo en memoria: se borra al cerrar la pestaña */
+const ID_RE = /^[1-9]\d{7}$/;
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const fdate = t => t ? new Date(t).toLocaleString('es-CL') : '—';
+
+function toast(msg, err) {
+  const t = el('div', 'toast' + (err ? ' err' : ''), msg); document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4200);
+}
+async function api(path, method, body) {
+  if (!API) throw new Error('Falta la URL del servidor (assets/kz26-config.js)');
+  const r = await fetch(API + path, { method: method || 'GET', headers: { 'Content-Type': 'application/json', 'X-Admin-Key': KEY }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
+  let j = {}; try { j = await r.json(); } catch (e) { /* ok */ }
+  if (!r.ok) throw new Error(j.error || 'Error ' + r.status);
+  return j;
+}
+
+/* ---------- acceso ---------- */
+if (!API) $('#cfgwarn').hidden = false;
+$('#lform').addEventListener('submit', async e => {
+  e.preventDefault();
+  const k = $('#key').value.trim(), msg = $('#lmsg'), btn = $('#enter');
+  msg.className = 'msg'; msg.textContent = ''; btn.disabled = true;
+  KEY = k;
+  try {
+    const r = await api('/admin/login', 'POST', {});
+    $('#lock').hidden = true; $('#app').hidden = false; $('#key').value = '';
+    $('#dwarn').hidden = !!r.discord; $('#dsend').disabled = !r.discord;
+    show('resumen');
+  } catch (err) { KEY = ''; msg.textContent = err.message; }
+  btn.disabled = false;
+});
+$('#out').addEventListener('click', () => { KEY = ''; $('#app').hidden = true; $('#lock').hidden = false; $('#key').focus(); });
+
+/* ---------- pestañas ---------- */
+const TABS = [['resumen', 'Resumen'], ['jugadores', 'Jugadores'], ['acciones', 'Acciones'], ['regalos', 'Regalos'], ['baneos', 'Baneos'], ['discord', 'Discord']];
+const tabs = $('#tabs');
+TABS.forEach(([id, name]) => { const b = el('button', 'tab', name); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.t = id; b.addEventListener('click', () => show(id)); tabs.appendChild(b); });
+function show(id) {
+  TABS.forEach(([t]) => { $('#t-' + t).hidden = t !== id; });
+  tabs.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === id)));
+  if (id === 'resumen') loadOverview(); if (id === 'baneos') loadBans();
+}
+
+async function loadOverview() {
+  try {
+    const o = await api('/admin/overview');
+    $('#sRec').textContent = o.records; $('#sBan').textContent = o.bans; $('#sGift').textContent = o.pending; $('#sDis').textContent = o.discord ? 'Activo' : 'Sin configurar';
+    const box = $('#log'); box.replaceChildren();
+    if (!o.log.length) box.appendChild(el('p', 'note', 'Todavía no hay actividad.'));
+    o.log.forEach(l => { const i = el('div', 'item'); const a = el('div'); a.appendChild(el('b', null, l.action + (l.id ? ' · ' + l.id : ''))); if (l.detail) a.appendChild(el('div', null, l.detail)); i.appendChild(a); i.appendChild(el('small', null, fdate(l.ts))); box.appendChild(i); });
+  } catch (e) { toast(e.message, true); }
+}
+
+/* ---------- jugadores ---------- */
+async function lookup(id) {
+  if (!ID_RE.test(id)) { toast('El ID debe tener 8 dígitos', true); return; }
+  try {
+    const p = await api('/admin/player/' + id), box = $('#pbox'); box.replaceChildren();
+    const head = el('div', 'item'); const l = el('div'); l.appendChild(el('b', 'mono', 'ID ' + p.id)); head.appendChild(l);
+    const st = el('div', 'chips');
+    st.appendChild(el('span', 'badge ' + (p.banned ? 'b-ban' : 'b-ok'), p.banned ? 'Baneado' : 'Activo'));
+    if (p.kickAt) st.appendChild(el('span', 'badge b-kick', 'Expulsado ' + fdate(p.kickAt)));
+    head.appendChild(st); box.appendChild(head);
+    if (p.banned) { const r = el('div', 'item'); r.appendChild(el('span', null, 'Motivo: ' + (p.reason || '—'))); r.appendChild(el('small', null, fdate(p.bannedAt))); box.appendChild(r); }
+    box.appendChild(el('h3', null, 'Regalos'));
+    if (!p.gifts.length) box.appendChild(el('p', 'note', 'Sin regalos.'));
+    p.gifts.forEach(g => { const i = el('div', 'item'); i.appendChild(el('span', null, [g.kicks ? g.kicks + ' Kicks' : '', g.item || ''].filter(Boolean).join(' + '))); i.appendChild(el('small', null, g.claimed ? 'Recibido ' + fdate(g.claimedAt) : 'Pendiente')); box.appendChild(i); });
+    $('#aid').value = id; $('#gid').value = id;
+  } catch (e) { toast(e.message, true); }
+}
+$('#look').addEventListener('click', () => lookup($('#pid').value.trim()));
+$('#pid').addEventListener('keydown', e => { if (e.key === 'Enter') lookup($('#pid').value.trim()); });
+
+/* ---------- acciones ---------- */
+document.querySelectorAll('[data-do]').forEach(b => b.addEventListener('click', async () => {
+  const id = $('#aid').value.trim(), what = b.dataset.do;
+  if (!ID_RE.test(id)) { toast('El ID debe tener 8 dígitos', true); return; }
+  if (what === 'ban' && !confirm('¿Banear el ID ' + id + '?')) return;
+  b.disabled = true;
+  try { await api('/admin/' + what, 'POST', { id, reason: $('#areason').value.trim() }); toast({ ban: 'ID baneado', unban: 'ID desbaneado', kick: 'ID expulsado' }[what]); }
+  catch (e) { toast(e.message, true); }
+  b.disabled = false;
+}));
+
+/* ---------- regalos ---------- */
+const pre = $('#presets');
+[100, 500, 1000, 5000, 20000].forEach(n => { const b = el('button', null, '+' + n.toLocaleString('es-CL')); b.type = 'button'; b.addEventListener('click', () => { $('#gk').value = n; }); pre.appendChild(b); });
+$('#gsend').addEventListener('click', async () => {
+  const id = $('#gid').value.trim();
+  if (!ID_RE.test(id)) { toast('El ID debe tener 8 dígitos', true); return; }
+  const btn = $('#gsend'); btn.disabled = true;
+  try {
+    await api('/admin/gift', 'POST', { id, kicks: Number($('#gk').value) || 0, item: $('#gi').value.trim(), note: $('#gn').value.trim() });
+    toast('Regalo enviado'); $('#gk').value = ''; $('#gi').value = ''; $('#gn').value = '';
+  } catch (e) { toast(e.message, true); }
+  btn.disabled = false;
+});
+
+/* ---------- baneos ---------- */
+async function loadBans() {
+  try {
+    const r = await api('/admin/bans'), box = $('#bans'); box.replaceChildren();
+    if (!r.bans.length) box.appendChild(el('p', 'note', 'No hay jugadores baneados.'));
+    r.bans.forEach(b => {
+      const i = el('div', 'item'), a = el('div'); a.appendChild(el('b', 'mono', 'ID ' + b.id)); a.appendChild(el('div', null, b.reason || 'Sin motivo')); a.appendChild(el('small', null, fdate(b.bannedAt)));
+      const u = el('button', 'g', 'Desbanear'); u.type = 'button';
+      u.addEventListener('click', async () => { u.disabled = true; try { await api('/admin/unban', 'POST', { id: b.id }); toast('ID desbaneado'); loadBans(); } catch (e) { toast(e.message, true); u.disabled = false; } });
+      i.appendChild(a); i.appendChild(u); box.appendChild(i);
+    });
+  } catch (e) { toast(e.message, true); }
+}
+$('#rb').addEventListener('click', loadBans);
+
+/* ---------- discord ---------- */
+const TPL = ['¡Nueva actualización de KZ 26 ya disponible!', 'Mantenimiento: el juego puede tardar en responder unos minutos.', '¡Evento de Kicks! Entra hoy y reclama tu premio.'];
+TPL.forEach(t => { const b = el('button', null, t.length > 34 ? t.slice(0, 32) + '…' : t); b.type = 'button'; b.title = t; b.addEventListener('click', () => { $('#dmsg').value = t; }); $('#dtpl').appendChild(b); });
+$('#dsend').addEventListener('click', async () => {
+  const m = $('#dmsg').value.trim(); if (!m) { toast('Escribe un mensaje', true); return; }
+  const btn = $('#dsend'); btn.disabled = true;
+  try { await api('/admin/say', 'POST', { username: $('#dname').value.trim(), message: m }); toast('Mensaje enviado a Discord'); $('#dmsg').value = ''; }
+  catch (e) { toast(e.message, true); }
+  btn.disabled = false;
+});
+})();
+</script>
+</body></html>
