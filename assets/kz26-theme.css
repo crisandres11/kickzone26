@@ -1,0 +1,79 @@
+/* KZ 26 · capa visual: fondo vivo, tarjetas de cristal, botones con brillo y animaciones.
+   Se carga después de los estilos de cada página y solo mejora la apariencia. */
+html{scroll-behavior:smooth}
+body{background:#070c16}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 0%,rgba(58,134,255,.16),transparent 70%),
+    radial-gradient(ellipse 55% 45% at 90% 10%,rgba(255,182,39,.13),transparent 70%),
+    radial-gradient(ellipse 70% 60% at 50% 110%,rgba(230,57,70,.10),transparent 70%),
+    #070c16}
+body::after{content:"";position:fixed;inset:-50% -20%;z-index:-1;pointer-events:none;opacity:.5;
+  background:
+    repeating-linear-gradient(100deg,rgba(255,255,255,.028) 0 90px,transparent 90px 180px),
+    linear-gradient(transparent 49.6%,rgba(255,255,255,.05) 50%,transparent 50.4%);
+  transform:rotate(-8deg);animation:kzpan 40s linear infinite}
+@keyframes kzpan{from{transform:rotate(-8deg) translateX(0)}to{transform:rotate(-8deg) translateX(-180px)}}
+
+/* barra superior */
+.top{padding-bottom:12px;border-bottom:1px solid rgba(255,182,39,.18);margin-bottom:6px}
+.mark{text-shadow:0 0 24px rgba(255,182,39,.28)}
+.mark b{background:linear-gradient(180deg,#ffd877,#ff9f1c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.idchip,.kzchip{border-radius:999px;transition:box-shadow .2s,border-color .2s,transform .2s}
+.idchip:hover,.idchip:focus-visible{box-shadow:0 0 18px rgba(255,182,39,.35);transform:translateY(-1px)}
+.kzchip{display:inline-flex;align-items:center;min-height:40px;padding:8px 14px;border:1px solid rgba(111,227,154,.4);background:linear-gradient(180deg,rgba(111,227,154,.14),rgba(111,227,154,.04));color:#9ff0bd;font:800 14px var(--display);letter-spacing:.1em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+
+/* tarjetas */
+.card{position:relative;background:linear-gradient(165deg,rgba(24,37,60,.92),rgba(11,18,31,.94));border:1px solid rgba(255,182,39,.16);box-shadow:0 24px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(8px);animation:kzin .55s cubic-bezier(.2,.9,.3,1) both}
+.card::after{content:"";position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,var(--amber,#ffb627),rgba(255,182,39,0) 70%);pointer-events:none}
+@keyframes kzin{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+.kicker{display:inline-flex;align-items:center;gap:10px}
+.kicker::before{content:"";width:28px;height:2px;background:linear-gradient(90deg,var(--amber,#ffb627),transparent)}
+h1{text-shadow:0 2px 0 rgba(0,0,0,.4)}
+
+/* botones */
+.btn,button.btn{position:relative;overflow:hidden;border-radius:2px;transition:transform .18s,box-shadow .25s,border-color .2s,background .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.2) 50%,transparent 65%);transform:translateX(-130%);pointer-events:none}
+.btn:hover::after{transform:translateX(130%);transition:transform .75s}
+.btn.primary{background:linear-gradient(180deg,#ffcf5c,#ff9f1c);border-color:#ffcf5c;color:#1a1200;box-shadow:0 8px 28px rgba(255,159,28,.32)}
+.btn.primary:hover{box-shadow:0 12px 36px rgba(255,159,28,.5)}
+.btn.danger:hover{box-shadow:0 10px 26px rgba(193,18,31,.35)}
+
+/* marcador */
+#hud{background:linear-gradient(180deg,rgba(24,37,60,.95),rgba(9,15,26,.95));border-color:rgba(255,182,39,.22);box-shadow:0 14px 44px rgba(0,0,0,.45),inset 5px 0 0 var(--ca,#3a86ff),inset -5px 0 0 var(--cb,#e63946)}
+.score{box-shadow:inset 0 0 22px rgba(255,182,39,.12),0 0 24px rgba(255,182,39,.12)}
+.stage{box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,182,39,.12)}
+
+/* tablas y listas */
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover{background:rgba(255,255,255,.04)}
+.tbl tbody tr.me{background:linear-gradient(90deg,rgba(255,182,39,.2),rgba(255,182,39,.05))}
+.fx li,.goals li,.tws li{transition:transform .15s,border-color .15s}
+.fx li:hover,.goals li:hover{transform:translateX(3px);border-color:rgba(255,182,39,.4)}
+.banner{background:linear-gradient(90deg,#ffd877,#ff9f1c,#ffd877);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:kzshine 4s linear infinite}
+@keyframes kzshine{to{background-position:200% center}}
+.big{animation:kzpop .7s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes kzpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+
+/* controles */
+input[type=range]{accent-color:#ffb627}
+select,input[type=text]{border-radius:2px;transition:border-color .2s,box-shadow .2s}
+select:focus,input[type=text]:focus{border-color:var(--amber,#ffb627);box-shadow:0 0 0 3px rgba(255,182,39,.18);outline:none}
+::selection{background:rgba(255,182,39,.35)}
+*{scrollbar-width:thin;scrollbar-color:#2a3b57 transparent}
+
+/* avisos del servidor */
+.kztoast{position:fixed;right:16px;bottom:16px;z-index:9000;max-width:min(360px,calc(100vw - 32px));padding:14px 18px;background:linear-gradient(135deg,#143a28,#0d1f18);border:1px solid #3fbf74;border-left:5px solid #6fe39a;color:#d8ffe8;font:600 15px var(--body);box-shadow:0 18px 44px rgba(0,0,0,.55);animation:kzin .4s both;transition:opacity .7s,transform .7s}
+.kztoast.out{opacity:0;transform:translateY(10px)}
+.kzblock{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:20px;background:rgba(4,7,13,.96);backdrop-filter:blur(10px)}
+.kzbox{display:grid;gap:14px;justify-items:center;text-align:center;max-width:460px;padding:30px;border:1px solid #6b2a2a;background:linear-gradient(160deg,#2a1216,#10090b);box-shadow:0 0 80px rgba(193,18,31,.25)}
+.kzblock.kick .kzbox{border-color:#7a5a12;background:linear-gradient(160deg,#2b210b,#100c04);box-shadow:0 0 80px rgba(255,182,39,.2)}
+.kzbox h2{margin:0;font:900 clamp(34px,8vw,52px)/1 var(--display,Impact);letter-spacing:.05em;text-transform:uppercase;color:#ff8f8f}
+.kzblock.kick .kzbox h2{color:#ffd877}
+.kzbox p{margin:0;color:#e7dede;font:500 17px/1.4 var(--body,system-ui)}
+.kzbox code{padding:6px 12px;background:#000;border:1px solid #3a2020;color:#ffb3b3;font:700 16px ui-monospace,monospace;letter-spacing:.12em}
+.kzbox button{min-height:46px;padding:0 24px;background:#ffb627;color:#1a1200;border:0;font:800 16px var(--display,Impact);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+
+@media (prefers-reduced-motion:reduce){body::after,.card,.banner,.big,.kztoast{animation:none!important}.btn::after{display:none}}
